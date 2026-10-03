@@ -1,0 +1,3635 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="purple" data-mode="dark">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="theme-color" content="#150f24">
+<title>PROFILE.OS — Personal Profile Template</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Sora:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+
+/* ==========================================================================
+   TOKENS — edit these to re-skin the whole page
+   ========================================================================== */
+:root{
+  --bg:            #150f24;
+  --bg-soft:       #1c1533;
+  --surface:       #221a3d;
+  --surface-2:     #2a2049;
+  --paper:         #f5efe6;
+  --paper-dim:     #e6ddcd;
+  --ink:           #f4f1fb;
+  --ink-dim:       #a99bcf;
+  --ink-faint:     #6f6491;
+  --line:          #382c5c;
+
+  --holo-pink:     #ff6ec7;
+  --holo-cyan:     #6ee9ff;
+  --holo-yellow:   #ffe066;
+  --holo-violet:   #b98bff;
+
+  --grad-holo: conic-gradient(from 180deg at 50% 50%,
+    var(--holo-pink), var(--holo-yellow), var(--holo-cyan), var(--holo-violet), var(--holo-pink));
+
+  --font-display: 'Space Grotesk', sans-serif;
+  --font-body:    'Sora', sans-serif;
+  --font-mono:    'JetBrains Mono', monospace;
+
+  --radius-lg: 26px;
+  --radius-md: 16px;
+  --radius-sm: 10px;
+  --radius-pill: 999px;
+
+  --ease: cubic-bezier(.22,1,.36,1);
+  --ease-spring: cubic-bezier(.2,.9,.3,1.2);
+  --ease-out: cubic-bezier(.16,1,.3,1);
+
+  /* elevation system — every shadow reads from one color+alpha pair so
+     theme/mode switches retint every layer of depth consistently */
+  --shadow-color: 0,0,0;
+  --shadow-a-sm: .4;
+  --shadow-a-md: .55;
+  --shadow-a-lg: .65;
+  --shadow-sm:    0 2px 10px -4px rgba(var(--shadow-color), var(--shadow-a-sm));
+  --shadow-md:    0 18px 40px -18px rgba(var(--shadow-color), var(--shadow-a-md));
+  --shadow-lg:    0 30px 70px -22px rgba(var(--shadow-color), var(--shadow-a-lg));
+  --shadow-hover: 0 22px 46px -18px rgba(var(--shadow-color), calc(var(--shadow-a-md) + .06));
+  --shadow-modal: 0 46px 100px -26px rgba(var(--shadow-color), calc(var(--shadow-a-lg) + .08));
+  --shadow-nav:   0 10px 30px -16px rgba(var(--shadow-color), .4);
+  --shadow-fab:   0 16px 36px -10px rgba(var(--shadow-color), .5);
+
+  /* translucent scrims — swapped per light/dark/AMOLED mode below */
+  --scrim-1: rgba(21,15,36,.72);   /* top nav */
+  --scrim-2: rgba(9,6,18,.78);     /* modal backdrop */
+  --scrim-3: rgba(21,15,36,.55);   /* small glass chips (modal close, etc.) */
+
+  --fs: 1;    /* text-size multiplier, driven by the a11y text controls */
+  --safe-t: env(safe-area-inset-top, 0px);
+  --safe-b: env(safe-area-inset-bottom, 0px);
+  --safe-l: env(safe-area-inset-left, 0px);
+  --safe-r: env(safe-area-inset-right, 0px);
+
+  --scrollY: 0;
+
+  /* ambient background intensity — separated from the blob rules themselves
+     so dark/light/AMOLED can each get a strength tuned for that background,
+     instead of one glow value fighting three very different canvases. */
+  --ambient-op-1: .28;  /* violet blob (top-left) */
+  --ambient-op-2: .28;  /* cyan blob (bottom-right) */
+  --ambient-op-3: .16;  /* pink accent (holo-gradient) */
+  --ambient-op-4: .10;  /* yellow accent */
+  --ambient-parallax: 1;
+}
+
+/* ==========================================================================
+   THEME PRESETS — five accent palettes, swapped via [data-theme] on <html>.
+   Every existing rule already reads var(--holo-*), so retargeting these four
+   values re-skins buttons, gradients, focus rings, foil and glows at once.
+   ========================================================================== */
+html[data-theme="purple"]{ --holo-pink:#ff6ec7; --holo-yellow:#ffe066; --holo-cyan:#6ee9ff; --holo-violet:#b98bff; }
+html[data-theme="cyan"]  { --holo-pink:#6ee9ff; --holo-yellow:#a5f3fc; --holo-cyan:#0ea5e9; --holo-violet:#7dd3fc; }
+html[data-theme="green"] { --holo-pink:#8bffb0; --holo-yellow:#d7ff66; --holo-cyan:#22d38a; --holo-violet:#5ee6c8; }
+html[data-theme="orange"]{ --holo-pink:#ffb066; --holo-yellow:#ffe066; --holo-cyan:#ff8a4c; --holo-violet:#ff9ec7; }
+html[data-theme="red"]   { --holo-pink:#ff7a90; --holo-yellow:#ffb066; --holo-cyan:#ff4d6d; --holo-violet:#ff6ec7; }
+
+/* ==========================================================================
+   MODE PRESETS — Dark (default), Light, AMOLED. Swapped via [data-mode].
+   ========================================================================== */
+html[data-mode="light"]{
+  --bg:#f3efe6; --bg-soft:#ffffff; --surface:#ffffff; --surface-2:#f6f0e4;
+  --ink:#241a3d; --ink-dim:#5c4f7d; --ink-faint:#8b7fae; --line:#e1d6c4;
+  --scrim-1: rgba(255,255,255,.72); --scrim-2: rgba(255,255,255,.82); --scrim-3: rgba(255,255,255,.65);
+  --shadow-color: 30,20,10; --shadow-a-sm:.10; --shadow-a-md:.14; --shadow-a-lg:.18;
+  /* the same opacity that glows on near-black reads as a smudge on a warm
+     light background — pull every blob back so it stays a soft wash of
+     color instead of dirtying the page. */
+  --ambient-op-1:.14; --ambient-op-2:.14; --ambient-op-3:.09; --ambient-op-4:.07;
+}
+html[data-mode="amoled"]{
+  --bg:#000000; --bg-soft:#050507; --surface:#0a0a10; --surface-2:#111018;
+  --ink:#f4f1fb; --ink-dim:#a99bcf; --ink-faint:#6f6491; --line:#1c1a28;
+  --scrim-1: rgba(0,0,0,.8); --scrim-2: rgba(0,0,0,.9); --scrim-3: rgba(0,0,0,.6);
+  --shadow-color: 0,0,0; --shadow-a-sm:.5; --shadow-a-md:.6; --shadow-a-lg:.7;
+  /* true black can carry a much brighter glow without ever looking washed
+     out, so the same blobs get to run hotter here than on dark or light. */
+  --ambient-op-1:.34; --ambient-op-2:.34; --ambient-op-3:.20; --ambient-op-4:.14;
+}
+html, body{ transition: background-color .45s var(--ease), color .45s var(--ease); }
+@media(prefers-reduced-motion:reduce){ html,body{ transition:none; } }
+
+*,*::before,*::after{ box-sizing:border-box; }
+html{ scroll-behavior:smooth; }
+body{
+  margin:0;
+  background:var(--bg);
+  color:var(--ink);
+  font-family:var(--font-body);
+  -webkit-font-smoothing:antialiased;
+  min-height:100vh;
+  overflow-x:hidden;
+}
+h1,h2,h3,h4{ font-family:var(--font-display); margin:0; }
+p{ margin:0; }
+a{ color:inherit; }
+button{ font-family:inherit; cursor:pointer; }
+::selection{ background:var(--holo-pink); color:#1a1030; }
+:focus-visible{ outline:2px solid var(--holo-cyan); outline-offset:3px; border-radius:8px; }
+
+.skip-link{
+  position:fixed; top:-60px; left:12px; z-index:200;
+  background:var(--ink); color:#1a1030; font-weight:700; font-size:13px;
+  padding:10px 16px; border-radius:var(--radius-sm); transition:top .2s var(--ease);
+}
+.skip-link:focus{ top:12px; }
+
+@media(prefers-contrast:more){
+  :root{ --line:#8f80c0; --ink-dim:#cfc6e8; --ink-faint:#a599c9; }
+  .chip,.fact,.post,.channel-card,.game-card{ border-width:1.5px; }
+}
+
+/* soft light that drifts toward the pointer — desktop only, one instance, low opacity */
+.cursor-glow{
+  position:fixed; top:0; left:0; width:460px; height:460px; border-radius:50%;
+  background:radial-gradient(circle, rgba(185,139,255,.14), rgba(110,233,255,.07) 42%, transparent 72%);
+  transform:translate(-50%,-50%); pointer-events:none; z-index:3; mix-blend-mode:screen;
+  opacity:0; transition:opacity .5s var(--ease); will-change:transform;
+}
+.cursor-glow.is-active{ opacity:1; }
+@media(pointer:coarse){ .cursor-glow{ display:none; } }
+@media(max-width:880px){ .cursor-glow{ display:none; } }
+@media(prefers-reduced-motion:reduce){ .cursor-glow{ display:none; } }
+
+/* ambient background: layered soft glows drifting on organic multi-point
+   paths, a slow hue shift woven into the same motion so the color itself
+   feels alive (not just position), and a very light scroll-linked parallax
+   via the standalone `translate` property so it composes with the drift
+   animation instead of fighting it for control of `transform`. */
+.ambient{
+  position:fixed; inset:0; z-index:0; pointer-events:none; overflow:hidden;
+}
+.ambient::before,
+.ambient::after{
+  content:''; position:absolute; width:60vmax; height:60vmax; border-radius:50%;
+}
+.ambient::before{
+  background:var(--holo-violet); top:-20vmax; left:-15vmax; opacity:var(--ambient-op-1);
+  animation:drift-a 34s ease-in-out infinite;
+  translate: 0 calc(var(--scrollY, 0) * -0.045px * var(--ambient-parallax));
+  transition:opacity .7s var(--ease);
+}
+.ambient::after{
+  background:var(--holo-cyan); bottom:-25vmax; right:-15vmax; opacity:var(--ambient-op-2);
+  animation:drift-b 29s ease-in-out infinite;
+  translate: 0 calc(var(--scrollY, 0) * -0.065px * var(--ambient-parallax));
+  transition:opacity .7s var(--ease);
+}
+.ambient__accent{
+  position:absolute; width:32vmax; height:32vmax; border-radius:50%;
+  /* borrows the ID card's own conic sweep instead of a flat hue, so the
+     backdrop reads as the same holographic material as the hero card
+     rather than a generic gradient-blob effect sitting behind it. The
+     drift-c keyframe already rotates this layer, which sweeps the
+     gradient's hues exactly the way the card's foil-spin does. */
+  background:var(--grad-holo); opacity:var(--ambient-op-3);
+  top:20%; left:52%; animation:drift-c 36s ease-in-out infinite;
+  translate: 0 calc(var(--scrollY, 0) * -0.085px * var(--ambient-parallax));
+  transition:opacity .7s var(--ease);
+}
+.ambient__accent2{
+  position:absolute; width:26vmax; height:26vmax; border-radius:50%;
+  background:var(--holo-yellow); opacity:var(--ambient-op-4);
+  top:64%; left:6%; animation:drift-d 41s ease-in-out infinite;
+  translate: 0 calc(var(--scrollY, 0) * -0.03px * var(--ambient-parallax));
+  transition:opacity .7s var(--ease);
+}
+
+/* Per-tab tint — a quiet orientation cue that echoes which section is open
+   without any text: one blob leans slightly brighter depending on the
+   active tab. Same blobs, same positions, just a small opacity re-weight,
+   so it reads as ambiance shifting rather than a scene change. */
+body[data-active-tab="feed"]      .ambient::after{    opacity:calc(var(--ambient-op-2) + .06); }
+body[data-active-tab="channels"]  .ambient::before{   opacity:calc(var(--ambient-op-1) + .06); }
+body[data-active-tab="games"]     .ambient__accent{   opacity:calc(var(--ambient-op-3) + .07); }
+body[data-active-tab="gallery"]   .ambient__accent2{  opacity:calc(var(--ambient-op-4) + .07); }
+body[data-active-tab="memories"]  .ambient__accent2{  opacity:calc(var(--ambient-op-4) + .05); }
+@media(prefers-reduced-motion:reduce){
+  .ambient::before,.ambient::after,.ambient__accent,.ambient__accent2{ transition:none; }
+}
+@keyframes drift-a{
+  0%,100%{ transform:translate(0,0) scale(1); filter:blur(110px) hue-rotate(0deg); }
+  33%{ transform:translate(5vmax,4vmax) scale(1.08); filter:blur(110px) hue-rotate(16deg); }
+  66%{ transform:translate(1vmax,7vmax) scale(0.95); filter:blur(110px) hue-rotate(-10deg); }
+}
+@keyframes drift-b{
+  0%,100%{ transform:translate(0,0) scale(1); filter:blur(110px) hue-rotate(0deg); }
+  30%{ transform:translate(-4vmax,-5vmax) scale(1.1); filter:blur(110px) hue-rotate(-14deg); }
+  70%{ transform:translate(-6vmax,-1vmax) scale(0.94); filter:blur(110px) hue-rotate(9deg); }
+}
+@keyframes drift-c{
+  0%,100%{ transform:translate(0,0) scale(1) rotate(0deg); filter:blur(120px) hue-rotate(0deg); }
+  50%{ transform:translate(-5vmax,4vmax) scale(1.2) rotate(10deg); filter:blur(120px) hue-rotate(22deg); }
+}
+@keyframes drift-d{
+  0%,100%{ transform:translate(0,0) scale(1); filter:blur(130px); }
+  50%{ transform:translate(4vmax,-3vmax) scale(1.15); filter:blur(130px); }
+}
+@media(prefers-reduced-motion:reduce){
+  .ambient::before,.ambient::after,.ambient__accent,.ambient__accent2{ animation:none; translate:none; }
+}
+
+/* ==========================================================================
+   PAGE-LOAD ENTRANCE — one-time staggered choreography, not a scroll effect.
+   Elements sit invisible until body.is-ready lands (next frame after paint),
+   then settle in with a shared easing so the hero reads as one composed beat
+   rather than separate parts arriving at random.
+   ========================================================================== */
+.nav,.id-card,.hero__eyebrow,.hero__tagline,.hero__bio,.stat-row,.chip-row,.social-row{
+  opacity:0; transform:translateY(16px);
+}
+@keyframes intro-in{ to{ opacity:1; transform:translateY(0); } }
+body.is-ready .nav{          animation:intro-in .5s var(--ease) forwards; }
+body.is-ready .id-card{      animation:intro-in .7s var(--ease) .08s forwards; }
+body.is-ready .hero__eyebrow{animation:intro-in .5s var(--ease) .18s forwards; }
+body.is-ready .hero__tagline{animation:intro-in .6s var(--ease) .25s forwards; }
+body.is-ready .hero__bio{    animation:intro-in .6s var(--ease) .33s forwards; }
+body.is-ready .stat-row{     animation:intro-in .6s var(--ease) .41s forwards; }
+body.is-ready .chip-row{     animation:intro-in .6s var(--ease) .48s forwards; }
+body.is-ready .social-row{   animation:intro-in .6s var(--ease) .55s forwards; }
+@media(prefers-reduced-motion:reduce){
+  .nav,.id-card,.hero__eyebrow,.hero__tagline,.hero__bio,.stat-row,.chip-row,.social-row{
+    opacity:1; transform:none; animation:none;
+  }
+}
+.grain{
+  position:fixed; inset:0; z-index:1; pointer-events:none; opacity:.05; mix-blend-mode:overlay;
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  animation:grain-breathe 9s ease-in-out infinite;
+}
+@keyframes grain-breathe{ 0%,100%{ opacity:.05; } 50%{ opacity:.08; } }
+@media(prefers-reduced-motion:reduce){ .grain{ animation:none; } }
+
+/* ==========================================================================
+   NAV
+   ========================================================================== */
+.nav{
+  position:sticky; top:0; z-index:50;
+  display:flex; align-items:center; gap:18px;
+  padding:14px 26px;
+  background:var(--scrim-1);
+  backdrop-filter:blur(20px) saturate(160%);
+  -webkit-backdrop-filter:blur(20px) saturate(160%);
+  border-bottom:1px solid var(--line);
+  box-shadow:var(--shadow-nav);
+}
+.nav__brand{
+  font-family:var(--font-mono); font-size:12px; letter-spacing:.14em;
+  color:var(--ink-dim); white-space:nowrap; text-transform:uppercase;
+  display:flex; align-items:center; gap:8px;
+}
+.nav__brand .dot{
+  width:8px;height:8px;border-radius:50%;background:var(--holo-cyan);
+  box-shadow:0 0 10px var(--holo-cyan);
+  animation:pulse-dot 2.4s ease-in-out infinite;
+}
+@keyframes pulse-dot{ 50%{ transform:scale(1.5); opacity:.6; } }
+
+.tabs{
+  display:flex; gap:4px; overflow-x:auto; scrollbar-width:none; flex:1;
+}
+.tabs::-webkit-scrollbar{ display:none; }
+.tab-btn{
+  border:0; background:transparent; color:var(--ink-faint);
+  font-size:13.5px; font-weight:600; letter-spacing:.02em;
+  padding:9px 16px; border-radius:999px; white-space:nowrap;
+  transition:color .25s var(--ease), background .25s var(--ease), box-shadow .25s var(--ease), transform .15s var(--ease);
+}
+.tab-btn:hover{ color:var(--ink); background:rgba(255,255,255,.05); }
+.tab-btn:active{ transform:scale(.96); }
+.tab-btn.is-active{
+  color:#1a1030; background:var(--ink);
+  box-shadow:0 6px 18px -8px rgba(244,241,251,.5);
+}
+.nav__status{
+  font-family:var(--font-mono); font-size:11px; color:var(--ink-faint);
+  border:1px solid var(--line); padding:6px 12px; border-radius:999px;
+  white-space:nowrap; display:none;
+}
+@media(min-width:820px){ .nav__status{ display:block; } }
+
+/* --- settings (theme + mode) --- */
+.settings-wrap{ position:relative; flex:none; }
+.settings-btn{
+  width:38px; height:38px; border-radius:50%; flex:none;
+  border:1px solid var(--line); background:var(--surface); color:var(--ink-dim);
+  display:flex; align-items:center; justify-content:center;
+  transition:transform .3s var(--ease-spring), color .25s var(--ease), border-color .25s var(--ease), background-color .4s var(--ease);
+}
+.settings-btn svg{ width:17px; height:17px; transition:transform .5s var(--ease-out); }
+@media(hover:hover){ .settings-btn:hover{ color:var(--ink); border-color:var(--holo-cyan); } }
+.settings-btn:active{ transform:scale(.9); }
+.settings-btn.is-open svg{ transform:rotate(65deg); }
+.settings-panel{
+  position:absolute; top:calc(100% + 10px); right:0; z-index:60;
+  width:236px; padding:16px; border-radius:var(--radius-md);
+  background:var(--scrim-1); backdrop-filter:blur(24px) saturate(160%); -webkit-backdrop-filter:blur(24px) saturate(160%);
+  border:1px solid var(--line); box-shadow:var(--shadow-lg);
+  opacity:0; transform:translateY(-8px) scale(.96); pointer-events:none; transform-origin:top right;
+  transition:opacity .22s var(--ease), transform .22s var(--ease-spring);
+}
+.settings-panel.is-open{ opacity:1; transform:translateY(0) scale(1); pointer-events:auto; }
+.settings-panel h5{
+  font-family:var(--font-mono); font-size:10.5px; color:var(--ink-faint);
+  text-transform:uppercase; letter-spacing:.08em; margin:0 0 10px;
+}
+.settings-panel h5 + h5{ margin-top:16px; }
+.theme-swatches{ display:flex; gap:10px; }
+.theme-swatch{
+  width:28px; height:28px; border-radius:50%; border:2px solid transparent;
+  background:conic-gradient(from 180deg, var(--sw-a), var(--sw-b), var(--sw-c), var(--sw-d), var(--sw-a));
+  transition:transform .2s var(--ease-spring), border-color .2s var(--ease);
+}
+.theme-swatch[data-theme="purple"]{ --sw-a:#ff6ec7; --sw-b:#ffe066; --sw-c:#6ee9ff; --sw-d:#b98bff; }
+.theme-swatch[data-theme="cyan"]{ --sw-a:#6ee9ff; --sw-b:#a5f3fc; --sw-c:#0ea5e9; --sw-d:#7dd3fc; }
+.theme-swatch[data-theme="green"]{ --sw-a:#8bffb0; --sw-b:#d7ff66; --sw-c:#22d38a; --sw-d:#5ee6c8; }
+.theme-swatch[data-theme="orange"]{ --sw-a:#ffb066; --sw-b:#ffe066; --sw-c:#ff8a4c; --sw-d:#ff9ec7; }
+.theme-swatch[data-theme="red"]{ --sw-a:#ff7a90; --sw-b:#ffb066; --sw-c:#ff4d6d; --sw-d:#ff6ec7; }
+.theme-swatch:hover{ transform:scale(1.1); }
+.theme-swatch.is-active{ border-color:var(--ink); }
+.mode-seg{ display:flex; gap:6px; background:var(--bg-soft); padding:4px; border-radius:var(--radius-pill); }
+.mode-seg button{
+  flex:1; border:0; background:transparent; color:var(--ink-faint); font-size:11.5px; font-weight:600;
+  padding:7px 0; border-radius:var(--radius-pill); transition:background .25s var(--ease), color .25s var(--ease);
+}
+.mode-seg button.is-active{ background:var(--ink); color:#1a1030; }
+.text-seg{ display:flex; gap:6px; align-items:center; margin-top:16px; }
+.text-seg button{
+  width:30px; height:30px; border-radius:50%; border:1px solid var(--line); background:var(--surface);
+  color:var(--ink-dim); font-family:var(--font-display); font-weight:700; transition:transform .2s var(--ease-spring);
+}
+.text-seg button:active{ transform:scale(.88); }
+.text-seg button:nth-child(1){ font-size:11px; }
+.text-seg button:nth-child(2){ font-size:15px; }
+
+/* ==========================================================================
+   HERO
+   ========================================================================== */
+.hero{
+  position:relative; z-index:2;
+  max-width:1180px; margin:0 auto;
+  padding:56px 24px 30px;
+  display:grid; grid-template-columns:340px 1fr; gap:48px;
+  align-items:center;
+}
+@media(max-width:880px){ .hero{ grid-template-columns:1fr; padding-top:36px; } }
+@media(max-width:600px){
+  .hero{ padding:18px 16px 14px; gap:20px; grid-template-columns:104px 1fr; align-items:start; text-align:left; }
+  .card-stage{ grid-row:1/3; }
+  .id-card{ aspect-ratio:3/4.6; border-radius:var(--radius-md); }
+  .id-card__inner{ padding:12px; }
+  .id-card__name{ font-size:14px; }
+  .id-card__meta{ font-size:10px; }
+  .id-card__label,.id-card__level{ font-size:9px; padding:2px 7px; }
+  .id-card__xp{ padding-top:8px; }
+  .hero__about{ gap:10px; }
+  .hero__tagline{ font-size:clamp(20px,6vw,26px); }
+  .hero__bio{ font-size:13.5px; line-height:1.55; }
+  .stat-row{ gap:16px; }
+  .stat b{ font-size:17px; }
+  .stat span{ font-size:10px; }
+  .chip-row{ display:none; } /* interests repeat in the About panel right below */
+  .social-row{ gap:7px; }
+  .social-btn{ padding:7px 12px; font-size:11.5px; }
+}
+
+/* a few soft floating motes for ambient depth — decorative only, hidden on touch/small screens */
+.floaters{ position:absolute; inset:0; overflow:visible; pointer-events:none; }
+.floater{ position:absolute; border-radius:50%; animation:float-y ease-in-out infinite; }
+.floater.f1{ width:7px; height:7px; top:10%; left:4%; background:var(--holo-cyan); box-shadow:0 0 12px var(--holo-cyan); animation-duration:9s; }
+.floater.f2{ width:5px; height:5px; top:74%; left:16%; background:var(--holo-pink); box-shadow:0 0 12px var(--holo-pink); animation-duration:11s; animation-delay:1.1s; }
+.floater.f3{ width:6px; height:6px; top:22%; left:94%; background:var(--holo-yellow); box-shadow:0 0 12px var(--holo-yellow); animation-duration:10s; animation-delay:.5s; }
+.floater.f4{ width:4px; height:4px; top:88%; left:80%; background:var(--holo-violet); box-shadow:0 0 10px var(--holo-violet); animation-duration:8s; animation-delay:2s; }
+@keyframes float-y{ 0%,100%{ transform:translate(0,0); } 50%{ transform:translate(6px,-18px); } }
+/* Below 880px, keep two of the four floaters instead of cutting all of
+   them — the ambient layer already carries less motion on small screens
+   (see .ambient sizing), so removing every drifting point too was leaving
+   phones, the majority viewing context, with a flat, static backdrop. */
+@media(max-width:880px){ .floater.f3, .floater.f4{ display:none; } }
+@media(prefers-reduced-motion:reduce){ .floater{ animation:none; } }
+
+/* --- the signature element: holographic tilt ID card --- */
+.card-stage{
+  perspective:1200px;
+  transform:translateY(calc(var(--scrollY,0) * -0.05px));
+}
+.id-card{
+  position:relative;
+  width:100%; aspect-ratio:3/4;
+  border-radius:var(--radius-lg);
+  background:linear-gradient(160deg,var(--surface-2),var(--surface) 60%);
+  border:1px solid var(--line);
+  box-shadow:var(--shadow-lg);
+  transform-style:preserve-3d;
+  transition:transform .12s ease-out, box-shadow .3s var(--ease);
+  overflow:hidden;
+  will-change:transform;
+}
+.id-card__foil{
+  position:absolute; inset:0;
+  background:var(--grad-holo);
+  opacity:.16;
+  mix-blend-mode:screen;
+  animation:foil-spin 12s linear infinite;
+  pointer-events:none;
+}
+@keyframes foil-spin{ to{ transform:rotate(360deg); } }
+.id-card__sheen{
+  position:absolute; inset:-40%;
+  background:radial-gradient(circle at var(--mx,50%) var(--my,50%), rgba(255,255,255,.35), transparent 45%);
+  pointer-events:none; mix-blend-mode:overlay;
+}
+.id-card__inner{
+  position:relative; z-index:2;
+  height:100%; display:flex; flex-direction:column;
+  padding:22px; transform:translateZ(30px);
+}
+.id-card__top{ display:flex; justify-content:space-between; align-items:flex-start; }
+.id-card__label{
+  font-family:var(--font-mono); font-size:10px; letter-spacing:.12em;
+  color:var(--ink-faint); text-transform:uppercase;
+}
+.id-card__level{
+  font-family:var(--font-mono); font-size:11px; color:var(--holo-yellow);
+  border:1px solid rgba(255,224,102,.4); padding:3px 9px; border-radius:999px;
+}
+.id-card__avatar-wrap{ position:relative; width:fit-content; margin:18px auto 14px; }
+.id-card__avatar{
+    margin:0;
+    width:118px;
+    height:118px;
+    border-radius:28px;
+    overflow:hidden;
+    background:var(--bg-soft);
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    box-shadow:0 14px 30px -10px rgba(255,110,199,.5);
+}
+
+.id-card__avatar img{
+    width:100%;
+    height:100%;
+    object-fit:contain;
+    display:block;
+}
+/* Placed after the base 118px rule on purpose: an earlier, unconditional
+   .id-card__avatar{width:118px;height:118px;...} rule further up the file
+   was winning the cascade tie against the <600px override, forcing a
+   118px avatar into a ~104px-wide mobile card and clipping it. Keeping
+   the mobile override last in source order guarantees it wins. */
+@media(max-width:600px){
+  .id-card__avatar-wrap{ margin:8px auto 8px; }
+  .id-card__avatar{ width:56px; height:56px; border-radius:16px; margin:0 auto; }
+}
+.online-dot{
+  position:absolute; right:-2px; bottom:-2px; width:18px; height:18px; border-radius:50%;
+  background:#4ade80; border:3px solid var(--surface-2);
+}
+.online-dot.away{ background:#facc15; }
+.online-dot.offline{ background:var(--ink-faint); }
+.online-dot.online{ animation:pulse-dot 2.4s ease-in-out infinite; }
+.badge-row{ display:inline-flex; gap:4px; vertical-align:middle; margin-left:6px; }
+.badge{
+  display:inline-flex; align-items:center; justify-content:center;
+  width:17px; height:17px; border-radius:50%; font-size:10px;
+}
+.badge--verified{ background:var(--holo-cyan); color:#0b1a22; }
+.badge--premium{ background:var(--holo-yellow); color:#3a2a00; }
+.badge--admin{ background:var(--holo-pink); color:#2a0a1c; }
+.id-card__name{ text-align:center; font-size:22px; font-weight:700; }
+.id-card__meta{
+  text-align:center; margin-top:4px; font-size:12.5px; color:var(--ink-dim);
+  font-family:var(--font-mono);
+}
+.id-card__xp{
+  margin-top:auto; padding-top:16px;
+}
+.id-card__xp-top{ display:flex; justify-content:space-between; font-size:10.5px; color:var(--ink-faint); font-family:var(--font-mono); margin-bottom:6px; }
+.id-card__xp-track{ height:6px; border-radius:999px; background:var(--bg-soft); overflow:hidden; }
+.id-card__xp-fill{ height:100%; border-radius:999px; background:linear-gradient(90deg,var(--holo-cyan),var(--holo-pink)); }
+
+.hero__about{ display:flex; flex-direction:column; gap:18px; }
+.hero__eyebrow{
+  font-family:var(--font-mono); font-size:12px; color:var(--holo-cyan); letter-spacing:.1em; text-transform:uppercase;
+}
+.hero__tagline{
+  font-size:clamp(28px,4vw,42px); font-weight:700; line-height:1.15;
+}
+.hero__tagline span{
+  background:linear-gradient(90deg,var(--holo-pink),var(--holo-cyan));
+  -webkit-background-clip:text; background-clip:text; color:transparent;
+}
+.hero__bio{ font-size:calc(15px * var(--fs)); line-height:1.7; color:var(--ink-dim); max-width:56ch; }
+
+.stat-row{ display:flex; gap:26px; flex-wrap:wrap; }
+.stat{ display:flex; flex-direction:column; }
+.stat b{ font-family:var(--font-display); font-size:22px; }
+.stat span{ font-size:11.5px; color:var(--ink-faint); font-family:var(--font-mono); text-transform:uppercase; letter-spacing:.06em; }
+
+.chip-row{ display:flex; flex-wrap:wrap; gap:8px; }
+.chip{
+  font-size:calc(12.5px * var(--fs)); padding:6px 13px; border-radius:999px;
+  background:var(--surface); border:1px solid var(--line); color:var(--ink-dim);
+  display:inline-flex; align-items:center; gap:6px;
+}
+
+.social-row{ display:flex; gap:10px; flex-wrap:wrap; }
+.social-btn{
+  border:1px solid var(--line); background:var(--surface); color:var(--ink);
+  padding:9px 15px; border-radius:999px; font-size:12.5px; font-weight:600;
+  display:inline-flex; align-items:center; gap:7px; text-decoration:none;
+  transition:transform .25s var(--ease), border-color .25s var(--ease), box-shadow .25s var(--ease);
+}
+@media(hover:hover){ .social-btn:hover{ transform:translateY(-2px); border-color:var(--holo-cyan); box-shadow:var(--shadow-sm); } }
+.social-btn:active{ transform:scale(.96); }
+.social-btn i{ width:7px;height:7px;border-radius:2px; background:currentColor; opacity:.7; }
+
+/* ==========================================================================
+   PANELS (tab content)
+   ========================================================================== */
+.panels{ position:relative; z-index:2; max-width:1180px; margin:0 auto; padding:10px 24px 100px; scroll-margin-top:79px; }
+@media(min-width:1600px){ .hero,.panels{ max-width:1320px; } }
+@media(max-width:520px){
+  .panels{ padding:8px 16px 90px; }
+  .facts-grid{ grid-template-columns:repeat(2,1fr); }
+  .photo-grid{ grid-template-columns:repeat(2,1fr); gap:8px; }
+  .channel-grid,.game-grid{ grid-template-columns:1fr 1fr; gap:10px; }
+  .post{ padding:16px; gap:11px; border-radius:var(--radius-sm); }
+  .post__avatar{ width:36px; height:36px; }
+}
+@media(max-width:360px){ .channel-grid,.game-grid{ grid-template-columns:1fr; } }
+.panel{ display:none; }
+.panel.is-active{ display:block; animation:panel-in .45s var(--ease); }
+@keyframes panel-in{ from{ opacity:0; transform:translateY(10px); } to{ opacity:1; transform:translateY(0); } }
+
+.section-head{ display:flex; align-items:baseline; justify-content:space-between; margin:38px 0 18px; }
+.section-head:first-child{ margin-top:6px; }
+.section-head h2{ font-size:20px; }
+.section-head small{ font-family:var(--font-mono); font-size:11px; color:var(--ink-faint); }
+
+/* reveal-on-scroll */
+.reveal{
+  opacity:0; transform:translateY(24px) scale(.98);
+  transition:opacity .6s var(--ease), transform .6s var(--ease);
+  transition-delay:var(--d, 0ms);
+}
+.reveal.is-visible{ opacity:1; transform:translateY(0) scale(1); }
+
+/* --- About panel --- */
+.facts-grid{ display:grid; grid-template-columns:repeat(auto-fill,minmax(150px,1fr)); gap:12px; }
+.fact{
+  background:var(--surface); border:1px solid var(--line); border-radius:var(--radius-md);
+  padding:14px 16px; box-shadow:var(--shadow-sm);
+  transition:border-color .3s var(--ease), transform .3s var(--ease);
+}
+@media(hover:hover){ .fact:hover{ border-color:rgba(110,233,255,.3); transform:translateY(-2px); } }
+.fact span{ display:block; font-family:var(--font-mono); font-size:10.5px; color:var(--ink-faint); text-transform:uppercase; letter-spacing:.06em; margin-bottom:6px; }
+.fact b{ font-size:calc(15px * var(--fs)); font-weight:600; }
+
+.ticker{
+  margin-top:22px; border:1px solid var(--line); border-radius:999px;
+  background:var(--surface); padding:10px 20px; overflow:hidden; position:relative;
+}
+.ticker__track{ display:flex; gap:44px; white-space:nowrap; animation:ticker 22s linear infinite; font-size:13px; color:var(--ink-dim); }
+.ticker__track span{ font-family:var(--font-mono); color:var(--holo-yellow); margin-right:8px; }
+@keyframes ticker{ from{ transform:translateX(0); } to{ transform:translateX(-50%); } }
+
+/* --- Feed panel --- */
+.post{
+  background:linear-gradient(165deg, var(--surface-2), var(--surface) 55%);
+  border:1px solid var(--line); border-radius:var(--radius-md);
+  padding:20px; margin-bottom:16px; display:flex; gap:14px;
+  box-shadow:var(--shadow-sm);
+  transition:transform .35s var(--ease), box-shadow .35s var(--ease), border-color .35s var(--ease), opacity .6s var(--ease);
+  transition-delay:0s, 0s, 0s, var(--d, 0ms);
+}
+@media(hover:hover){
+  .post:hover{ transform:translateY(-3px); box-shadow:var(--shadow-md); border-color:rgba(110,233,255,.25); }
+}
+.post:active{ transform:scale(.995); }
+.post__avatar{
+  width:42px;height:42px;border-radius:12px; flex:none; position:relative; overflow:hidden;
+  background:linear-gradient(140deg,var(--holo-cyan),var(--holo-violet));
+  box-shadow:0 6px 16px -6px rgba(185,139,255,.55);
+}
+.post__avatar img{ width:100%; height:100%; object-fit:cover; display:block; opacity:0; transition:opacity .5s var(--ease); }
+.post__avatar.is-loaded img{ opacity:1; }
+/* keep the broken-image fallback compact at avatar size — the full
+   icon+message+retry layout used elsewhere doesn't fit a 42px box */
+.post__avatar .img-fallback{ padding:0; }
+.post__avatar .img-fallback svg{ width:16px; height:16px; }
+.post__avatar .img-fallback p,
+.post__avatar .img-fallback__retry{ display:none; }
+.post__body{ flex:1; min-width:0; }
+.post__top{ display:flex; gap:8px; align-items:baseline; font-size:13px; }
+.post__top b{ font-size:14px; letter-spacing:.01em; }
+.post__top time{ color:var(--ink-faint); font-family:var(--font-mono); font-size:11.5px; }
+.post__text{ margin-top:7px; font-size:calc(14.5px * var(--fs)); line-height:1.65; color:var(--ink-dim); }
+
+/* Adaptive media box — aspect ratio is set inline per-image (see the Feed
+   image reliability pipeline in JS),
+   clamped so ultra-tall/ultra-wide images stay contained without empty letterboxing
+   or dominating the feed. */
+.post__media{
+  margin-top:13px; border-radius:var(--radius-sm);
+  position:relative; overflow:hidden;
+  background:var(--bg-soft);
+  aspect-ratio: var(--media-ratio, 16/10);
+  max-height:min(62vh, 560px);
+}
+.post__media::before{
+  content:''; position:absolute; inset:0;
+  background:linear-gradient(100deg, transparent 30%, rgba(255,255,255,.06) 50%, transparent 70%);
+  background-size:200% 100%; opacity:0; animation:shimmer 1.4s linear infinite;
+}
+.post__media.is-loaded::before{ display:none; }
+@keyframes shimmer{ 0%{ background-position:150% 0; opacity:1; } 100%{ background-position:-50% 0; opacity:1; } }
+.post__media img{
+  width:100%; height:100%; object-fit:cover; display:block;
+  opacity:0; transform:scale(1.03);
+  transition:opacity .5s var(--ease), transform .6s var(--ease);
+}
+.post__media.is-loaded img{ opacity:1; transform:scale(1); }
+@media(hover:hover){ .post:hover .post__media img{ transform:scale(1.015); } }
+
+/* -- image reliability: fallback state shown when a feed image can't load -- */
+.img-shell{ position:relative; }
+.img-fallback{
+  position:absolute; inset:0; display:none; flex-direction:column;
+  align-items:center; justify-content:center; gap:8px; text-align:center;
+  padding:16px; background:var(--surface); color:var(--ink-faint);
+  border-radius:inherit;
+}
+/* the [hidden] attribute alone isn't enough here — an author rule that sets
+   `display` on the same element always wins over the UA [hidden] rule, even
+   at equal specificity, so visibility is driven by .img-failed instead.
+   Scoped to .img-failed alone (not .img-shell.img-failed) so it also
+   covers #modalMedia, which reuses this fallback markup without the
+   .img-shell class. */
+.img-failed .img-fallback{ display:flex; }
+.img-fallback p{ margin:0; font-size:12.5px; max-width:220px; }
+.img-fallback__retry{
+  background:transparent; color:var(--ink-dim); border:1px solid var(--line);
+  border-radius:var(--radius-pill); padding:6px 16px; font-size:12px; font-weight:600;
+  transition:border-color .2s var(--ease), color .2s var(--ease);
+}
+.img-fallback__retry:hover,
+.img-fallback__retry:focus-visible{ border-color:var(--holo-cyan); color:var(--ink); }
+.img-failed .feed-img{ display:none; }
+
+/* -- image reliability: loading shimmer + fade-in for the .img-shell
+   instances that sit outside .post__media/.photo (product screenshots,
+   video posters, author avatars) — these previously had no loading
+   affordance at all, just a flat background until load/fail. Grouped as
+   extra selectors on the existing rules so specificity/order stays safe. */
+.product-card__shots .img-shell::before,
+.video-facade::before,
+.post__author-card__avatar::before,
+.post__avatar::before{
+  content:''; position:absolute; inset:0;
+  background:linear-gradient(100deg, transparent 30%, rgba(255,255,255,.06) 50%, transparent 70%);
+  background-size:200% 100%; opacity:0; animation:shimmer 1.4s linear infinite;
+}
+.product-card__shots .img-shell.is-loaded::before,
+.video-facade.is-loaded::before,
+.post__author-card__avatar.is-loaded::before,
+.post__avatar.is-loaded::before{ display:none; }
+.product-card__shots .img-shell img,
+.post__author-card__avatar img{ opacity:0; transition:opacity .5s var(--ease); }
+.video-facade img{ transition:opacity .5s var(--ease); }
+.product-card__shots .img-shell.is-loaded img,
+.post__author-card__avatar.is-loaded img{ opacity:1; }
+@media(prefers-reduced-motion:reduce){
+  .post__media::before, .photo::before,
+  .product-card__shots .img-shell::before, .video-facade::before, .post__author-card__avatar::before, .post__avatar::before{
+    animation:none; opacity:.5;
+  }
+}
+.post__foot{ margin-top:13px; display:flex; gap:18px; font-family:var(--font-mono); font-size:12px; color:var(--ink-faint); }
+.post__foot span{ display:inline-flex; align-items:center; gap:5px; transition:color .2s var(--ease); cursor:default; }
+@media(hover:hover){ .post__foot span:hover{ color:var(--holo-pink); } }
+
+/* ==========================================================================
+   FEED CONTENT BLOCKS — modular post system. Namespaced .block-*/.post__*
+   so nothing here can collide with channel-card / game-card / etc. Every
+   rule below reads existing tokens only (--surface, --line, --holo-*,
+   --radius-*, --shadow-*, --ease*) — no new visual language introduced.
+   ========================================================================== */
+
+/* -- meta row (category / version / reading time chips) -- */
+.post__meta-row{ display:flex; gap:6px; align-items:center; flex-wrap:wrap; margin:2px 0 9px; }
+.post__meta-row .chip{ padding:3px 10px; font-size:11px; }
+.post__meta-row time{ color:var(--ink-faint); font-family:var(--font-mono); font-size:11.5px; }
+
+/* -- toolbar (sort control) -- */
+.feed-toolbar{ display:flex; justify-content:flex-end; margin-bottom:14px; }
+.feed-sort{
+  background:var(--surface); color:var(--ink-dim); border:1px solid var(--line);
+  border-radius:999px; font-size:12px; font-family:inherit; padding:6px 12px;
+  min-height:32px; cursor:pointer;
+}
+
+/* -- block stack -- */
+.post__blocks{ display:flex; flex-direction:column; gap:13px; margin-top:7px; }
+.post__blocks > *{ margin:0; }
+
+.block-heading{ font-family:var(--font-display); line-height:1.3; }
+.block-heading.lvl-2{ font-size:19px; } .block-heading.lvl-3{ font-size:16.5px; } .block-heading.lvl-4{ font-size:14.5px; }
+
+.block-text{ font-size:calc(14.5px * var(--fs)); line-height:1.65; color:var(--ink-dim); }
+.block-text :is(b,strong){ color:var(--ink); }
+.block-text a{ color:var(--holo-cyan); text-decoration:underline; text-underline-offset:2px; }
+
+.block-list{ margin:0; padding-left:20px; font-size:calc(14px * var(--fs)); line-height:1.7; color:var(--ink-dim); }
+.block-list--check{ list-style:none; padding-left:0; display:flex; flex-direction:column; gap:6px; }
+.block-list--check li{ display:flex; gap:8px; align-items:flex-start; }
+.block-list--check li::before{ content:'✓'; color:var(--holo-cyan); flex:none; font-family:var(--font-mono); }
+.block-list--check li.is-done{ color:var(--ink-faint); text-decoration:line-through; }
+.block-list--check li.is-done::before{ content:'✓'; color:var(--ink-faint); }
+
+.block-quote{
+  border-left:3px solid var(--holo-violet); padding:2px 0 2px 14px; margin:0;
+  font-style:italic; color:var(--ink-dim); font-size:calc(14px * var(--fs));
+}
+.block-quote cite{ display:block; margin-top:6px; font-style:normal; font-size:12px; color:var(--ink-faint); }
+
+.block-code{
+  background:var(--bg-soft); border:1px solid var(--line); border-radius:var(--radius-sm);
+  overflow:hidden; position:relative;
+}
+.block-code__bar{
+  display:flex; justify-content:space-between; align-items:center;
+  padding:8px 12px; border-bottom:1px solid var(--line); font-family:var(--font-mono);
+  font-size:11px; color:var(--ink-faint);
+}
+.block-code__copy{
+  background:transparent; border:1px solid var(--line); color:var(--ink-dim);
+  border-radius:6px; padding:3px 9px; font-size:11px; font-family:var(--font-mono);
+  transition:color .2s var(--ease), border-color .2s var(--ease);
+}
+@media(hover:hover){ .block-code__copy:hover{ color:var(--ink); border-color:var(--holo-cyan); } }
+.block-code pre{ margin:0; padding:14px; overflow-x:auto; -webkit-overflow-scrolling:touch; }
+.block-code code{ font-family:var(--font-mono); font-size:12.5px; color:var(--ink); line-height:1.6; }
+
+.block-table-wrap{ overflow-x:auto; -webkit-overflow-scrolling:touch; border:1px solid var(--line); border-radius:var(--radius-sm); }
+.block-table{ width:100%; border-collapse:collapse; font-size:13px; white-space:nowrap; }
+.block-table th,.block-table td{ padding:9px 12px; text-align:left; border-bottom:1px solid var(--line); }
+.block-table th{ font-family:var(--font-display); color:var(--ink); background:var(--surface-2); }
+.block-table tr:last-child td{ border-bottom:0; }
+.block-table td.is-highlight,.block-table th.is-highlight{ background:rgba(110,233,255,.07); }
+
+.block-divider{ border:0; border-top:1px solid var(--line); margin:2px 0; }
+
+.badge-inline{
+  display:inline-flex; align-items:center; font-family:var(--font-mono); font-size:10.5px;
+  padding:2px 8px; border-radius:999px; border:1px solid var(--line); color:var(--ink-dim);
+  vertical-align:middle;
+}
+.badge-inline--free{ color:#7ee787; border-color:rgba(126,231,135,.4); }
+.badge-inline--paid{ color:var(--holo-yellow); border-color:rgba(255,224,102,.4); }
+
+/* -- alerts / callouts -- */
+.block-alert{
+  display:flex; gap:10px; border-left:3px solid var(--line); border-radius:var(--radius-sm);
+  padding:12px 14px; font-size:calc(13px * var(--fs)); background:var(--surface); color:var(--ink-dim);
+}
+.block-alert__icon{ flex:none; line-height:1; }
+.block-alert--info{ border-color:var(--holo-cyan); }
+.block-alert--success{ border-color:#7ee787; }
+.block-alert--warning{ border-color:var(--holo-yellow); }
+.block-alert--danger{ border-color:#ff6e6e; }
+.block-alert--note{ border-color:var(--holo-violet); }
+
+/* -- gallery block (reuses .photo/.photo-grid look, own instance) -- */
+.block-gallery{ display:grid; grid-template-columns:repeat(auto-fill,minmax(110px,1fr)); gap:8px; }
+.block-gallery .photo{ aspect-ratio:1; }
+
+/* -- video block -- */
+.video-block{ position:relative; border-radius:var(--radius-sm); overflow:hidden; background:var(--bg-soft); aspect-ratio:16/9; }
+.video-block video{ width:100%; height:100%; display:block; object-fit:cover; }
+.video-facade{ position:relative; width:100%; height:100%; border:0; padding:0; cursor:pointer; }
+.video-facade img{ width:100%; height:100%; object-fit:cover; display:block; opacity:.75; }
+.video-facade__play{
+  position:absolute; inset:0; margin:auto; width:56px; height:56px; border-radius:50%;
+  background:var(--scrim-1); backdrop-filter:blur(6px); color:var(--ink);
+  display:flex; align-items:center; justify-content:center; font-size:20px;
+  transition:transform .25s var(--ease-spring);
+}
+@media(hover:hover){ .video-facade:hover .video-facade__play{ transform:scale(1.1); } }
+
+/* -- timeline block -- */
+.block-timeline{ position:relative; padding-left:24px; display:flex; flex-direction:column; gap:16px; list-style:none; margin:0; }
+.block-timeline::before{ content:''; position:absolute; left:6px; top:5px; bottom:5px; width:2px; background:var(--line); }
+.block-timeline__step{ position:relative; }
+.block-timeline__step::before{
+  content:''; position:absolute; left:-24px; top:3px; width:10px; height:10px; border-radius:50%;
+  background:var(--holo-cyan); box-shadow:0 0 0 3px var(--bg-soft);
+}
+.block-timeline__step b{ font-family:var(--font-mono); font-size:12px; color:var(--holo-cyan); }
+.block-timeline__step time{ margin-left:8px; color:var(--ink-faint); font-family:var(--font-mono); font-size:11px; }
+.block-timeline__step p{ margin-top:3px; font-size:13px; color:var(--ink-dim); }
+
+/* -- download card -- */
+.download-card{
+  border:1px solid var(--line); border-radius:var(--radius-sm); background:var(--surface);
+  display:flex; flex-direction:column; gap:2px; overflow:hidden;
+}
+.download-file{ display:flex; align-items:flex-start; gap:10px; padding:12px 14px; }
+.download-file__icon,.download-file__btn{ margin-top:1px; }
+.download-file + .download-file{ border-top:1px solid var(--line); }
+.download-file__icon{
+  flex:none; width:30px; height:30px; border-radius:8px; display:flex; align-items:center; justify-content:center;
+  background:linear-gradient(140deg,var(--holo-cyan),var(--holo-violet)); font-family:var(--font-mono);
+  font-size:9px; font-weight:700; color:#1a1030;
+}
+.download-file__body{ flex:1; min-width:0; }
+.download-file__name{ font-size:13.5px; font-weight:600; }
+.download-file__meta{ font-family:var(--font-mono); font-size:11px; color:var(--ink-faint); margin-top:2px; }
+.download-file__btn{
+  flex:none; background:var(--ink); color:#1a1030; border-radius:999px; font-size:11px; font-weight:700;
+  padding:7px 11px; transition:transform .15s var(--ease);
+}
+.download-file__btn:active{ transform:scale(.94); }
+.download-file__changelog{
+  font-size:12px; color:var(--ink-faint); padding:0 14px 12px 54px; cursor:pointer;
+}
+.download-file__changelog summary{ cursor:pointer; color:var(--holo-cyan); }
+.download-file__changelog ul{ margin:8px 0 0; padding-left:16px; }
+
+/* -- product card -- */
+.product-card{
+  border:1px solid var(--line); border-radius:var(--radius-md); background:linear-gradient(165deg, var(--surface-2), var(--surface) 60%);
+  padding:16px; display:flex; flex-direction:column; gap:10px;
+}
+.product-card__head{ display:flex; justify-content:space-between; align-items:flex-start; gap:10px; }
+.product-card__head h4{ font-size:15.5px; }
+.product-card__price{ font-family:var(--font-mono); font-size:13px; color:var(--holo-yellow); white-space:nowrap; }
+.product-card__desc{ font-size:13px; color:var(--ink-dim); line-height:1.6; }
+.product-card__features{ margin:0; padding-left:18px; font-size:12.5px; color:var(--ink-dim); display:flex; flex-direction:column; gap:4px; }
+.product-card__shots{ display:flex; gap:8px; overflow-x:auto; scroll-snap-type:x mandatory; -webkit-overflow-scrolling:touch; margin:0 -2px; padding:2px; }
+.product-card__shots .img-shell{
+  scroll-snap-align:start; flex:none; display:block; width:150px; height:94px;
+  border-radius:var(--radius-sm); border:1px solid var(--line); overflow:hidden;
+  background:var(--bg-soft);
+}
+.product-card__shots img{ width:100%; height:100%; object-fit:cover; }
+.product-card__actions{ display:flex; gap:8px; flex-wrap:wrap; }
+.product-card__btn{
+  border-radius:999px; padding:8px 16px; font-size:12.5px; font-weight:700;
+  transition:transform .15s var(--ease), border-color .2s var(--ease);
+}
+.product-card__btn:active{ transform:scale(.94); }
+.product-card__btn--primary{ background:var(--ink); color:#1a1030; }
+.product-card__btn--ghost{ background:transparent; border:1px solid var(--line); color:var(--ink-dim); }
+@media(hover:hover){ .product-card__btn--ghost:hover{ border-color:var(--holo-cyan); color:var(--ink); } }
+
+/* -- generic block button -- */
+.block-btn{
+  display:inline-flex; width:fit-content; border-radius:999px; padding:10px 20px; font-size:13px; font-weight:700;
+  background:var(--ink); color:#1a1030; transition:transform .15s var(--ease);
+}
+.block-btn:active{ transform:scale(.95); }
+
+/* -- statistics block (reuses .stat-row look) -- */
+.block-stats{ display:flex; gap:22px; flex-wrap:wrap; padding:4px 0; }
+.block-stats__item{ display:flex; flex-direction:column; }
+.block-stats__item b{ font-family:var(--font-display); font-size:20px; }
+.block-stats__item span{ font-size:11px; color:var(--ink-faint); text-transform:uppercase; letter-spacing:.04em; }
+
+/* -- smart link cards -- */
+.post__links{ display:flex; flex-direction:column; gap:8px; margin-top:13px; }
+.smart-link-card{
+  display:flex; gap:12px; align-items:center; border:1px solid var(--line); border-radius:var(--radius-sm);
+  padding:10px 12px; background:var(--surface); text-decoration:none; color:inherit;
+  transition:border-color .2s var(--ease), transform .15s var(--ease);
+}
+@media(hover:hover){ .smart-link-card:hover{ border-color:var(--holo-cyan); } }
+.smart-link-card:active{ transform:scale(.99); }
+.smart-link-card__icon{
+  flex:none; width:34px; height:34px; border-radius:9px; display:flex; align-items:center; justify-content:center;
+  font-size:16px; background:var(--surface-2);
+}
+.smart-link-card__body{ min-width:0; }
+.smart-link-card__title{ display:block; font-size:13px; font-weight:600; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+.smart-link-card__url{ display:block; font-family:var(--font-mono); font-size:11px; color:var(--ink-faint); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+
+/* -- telegram / github integration row -- */
+.post__integrations{ display:flex; gap:8px; flex-wrap:wrap; margin-top:11px; }
+.integration-btn{
+  display:inline-flex; align-items:center; gap:6px; border:1px solid var(--line); border-radius:999px;
+  padding:7px 13px; font-size:12px; font-weight:600; background:var(--surface); color:var(--ink-dim);
+  transition:border-color .2s var(--ease), color .2s var(--ease);
+}
+@media(hover:hover){ .integration-btn:hover{ border-color:var(--holo-cyan); color:var(--ink); } }
+
+/* -- author card (collapsed by default) -- */
+.post__author-card{
+  margin-top:11px; border:1px solid var(--line); border-radius:var(--radius-sm); background:var(--surface);
+  overflow:hidden;
+}
+.post__author-card summary{
+  display:flex; align-items:center; gap:8px; padding:9px 12px; cursor:pointer; list-style:none;
+  font-size:12.5px; color:var(--ink-dim);
+}
+.post__author-card summary::-webkit-details-marker{ display:none; }
+.post__author-card summary::before{ content:'👤'; }
+.post__author-card__body{ padding:0 14px 14px; display:flex; gap:12px; }
+.post__author-card__avatar{ width:44px; height:44px; border-radius:12px; flex:none; overflow:hidden; display:block; background:var(--bg-soft); }
+.post__author-card__avatar img{ width:100%; height:100%; object-fit:cover; display:block; }
+.post__author-card__bio{ font-size:12.5px; color:var(--ink-dim); line-height:1.6; }
+.post__author-card__links{ display:flex; gap:10px; margin-top:6px; font-family:var(--font-mono); font-size:11px; }
+.post__author-card__links a{ color:var(--holo-cyan); text-decoration:none; }
+
+/* -- reactions (generalizes .like-btn) -- */
+.post__reactions{ margin-top:14px; display:flex; align-items:center; gap:14px; flex-wrap:wrap; }
+.reaction-bar{ display:flex; gap:4px; flex-wrap:wrap; }
+.reaction-btn{
+  border:1px solid transparent; background:transparent; border-radius:999px;
+  padding:4px 9px; font-size:13px; font-family:var(--font-mono); display:inline-flex; align-items:center; gap:5px;
+  color:var(--ink-faint); transition:transform .2s var(--ease-spring), border-color .2s var(--ease), color .2s var(--ease);
+}
+.reaction-btn:active{ transform:scale(.9); }
+.reaction-btn.is-active{ border-color:var(--holo-pink); color:var(--holo-pink); }
+.reaction-btn.is-active.just-reacted{ animation:heart-pop .5s var(--ease-spring); }
+.comments-toggle{
+  border:0; background:transparent; font-family:var(--font-mono); font-size:12px; color:var(--ink-faint);
+  padding:4px 6px; transition:color .2s var(--ease);
+}
+@media(hover:hover){ .comments-toggle:hover{ color:var(--holo-pink); } }
+
+/* -- comment thread -- */
+.post__comments{ margin-top:14px; padding-top:14px; border-top:1px solid var(--line); }
+.comment-thread{ display:flex; flex-direction:column; gap:14px; }
+.comment{ display:flex; gap:10px; }
+.comment--reply{ margin-left:32px; }
+.comment__avatar{
+  flex:none; width:30px; height:30px; border-radius:9px;
+  background:linear-gradient(140deg,var(--holo-cyan),var(--holo-violet));
+}
+.comment__body{ flex:1; min-width:0; }
+.comment__top{ display:flex; gap:8px; align-items:baseline; font-size:12.5px; }
+.comment__top b{ font-size:13px; }
+.comment__top time{ color:var(--ink-faint); font-family:var(--font-mono); font-size:11px; }
+.comment__text{ font-size:13px; color:var(--ink-dim); line-height:1.6; margin-top:3px; }
+.comment__reply-btn{ border:0; background:transparent; font-size:11.5px; color:var(--ink-faint); margin-top:4px; padding:0; }
+@media(hover:hover){ .comment__reply-btn:hover{ color:var(--holo-cyan); } }
+
+@media(prefers-contrast:more){
+  .download-card,.product-card,.smart-link-card,.block-alert,.post__author-card{ border-width:1.5px; }
+}
+
+/* --- Channels panel --- */
+.channel-grid{ display:grid; grid-template-columns:repeat(auto-fill,minmax(230px,1fr)); gap:14px; }
+.channel-card{
+  background:var(--surface); border:1px solid var(--line); border-radius:var(--radius-md);
+  padding:18px; display:flex; flex-direction:column; gap:10px; position:relative;
+  transition:transform .4s var(--ease), border-color .3s var(--ease), box-shadow .3s var(--ease);
+  box-shadow:var(--shadow-sm); transform-style:preserve-3d;
+}
+.channel-card::after{
+  content:''; position:absolute; inset:0; border-radius:inherit; pointer-events:none;
+  background:radial-gradient(circle at var(--mx,50%) var(--my,50%), rgba(255,255,255,.10), transparent 55%);
+  opacity:0; transition:opacity .3s var(--ease);
+}
+@media(hover:hover){
+  .channel-card:hover{ border-color:var(--holo-cyan); box-shadow:var(--shadow-md); }
+  .channel-card:hover::after{ opacity:1; }
+}
+.channel-card:active{ transform:scale(.98); }
+.channel-card__icon{
+  width:38px;height:38px;border-radius:10px; display:flex; align-items:center; justify-content:center;
+  font-size:17px; font-weight:700; color:#1a1030; background:var(--bg-soft); overflow:hidden; flex:none;
+}
+.channel-card__icon img{ width:100%; height:100%; object-fit:contain; display:block; }
+.channel-card__handle{ font-family:var(--font-mono); font-size:12px; color:var(--ink-faint); }
+.channel-card__stats{ font-size:12.5px; color:var(--ink-dim); margin-top:auto; }
+.channel-card a{ font-size:12.5px; font-weight:600; color:var(--holo-cyan); text-decoration:none; }
+
+/* --- Gallery panel --- */
+.photo-grid{ display:grid; grid-template-columns:repeat(auto-fill,minmax(150px,1fr)); gap:10px; }
+.photo{
+  aspect-ratio:1; border-radius:var(--radius-sm); position:relative; overflow:hidden;
+  cursor:pointer; border:1px solid var(--line); background:var(--bg-soft);
+  display:flex; align-items:center; justify-content:center;
+  transition:transform .3s var(--ease), box-shadow .3s var(--ease);
+}
+.photo::before{
+  content:''; position:absolute; inset:0;
+  background:linear-gradient(100deg, transparent 30%, rgba(255,255,255,.07) 50%, transparent 70%);
+  background-size:200% 100%; animation:shimmer 1.4s linear infinite;
+}
+.photo.is-loaded::before{ display:none; }
+.photo img{
+  width:100%; height:100%; object-fit:cover; display:block;
+  clip-path:inset(0 0 100% 0); transform:scale(1.08); opacity:0;
+  transition:clip-path .7s var(--ease), transform .9s var(--ease), opacity .25s linear;
+}
+.photo img.is-loaded{ clip-path:inset(0 0 0% 0); transform:scale(1); opacity:1; }
+.photo::after{
+  content:attr(data-caption); position:absolute; left:0; right:0; bottom:0;
+  padding:8px 10px; font-size:11px; font-family:var(--font-mono);
+  background:linear-gradient(to top, rgba(0,0,0,.65), transparent);
+  color:#fff; opacity:0; transition:opacity .25s var(--ease);
+}
+@media(hover:hover){
+  .photo:hover::after{ opacity:1; }
+  .photo:hover{ transform:scale(1.02); box-shadow:var(--shadow-md); }
+  .photo:hover img{ transform:scale(1.06); }
+}
+.photo:active{ transform:scale(.97); }
+.photo:active::after{ opacity:1; }
+
+/* --- Memories panel (timeline) --- */
+.timeline{ position:relative; padding-left:26px; }
+.timeline::before{
+  content:''; position:absolute; left:6px; top:6px; bottom:6px; width:2px;
+  background:linear-gradient(var(--holo-cyan),var(--holo-pink));
+  opacity:.35;
+}
+.tl-item{ position:relative; padding-bottom:26px; }
+.tl-item::before{
+  content:''; position:absolute; left:-26px; top:4px; width:12px;height:12px;border-radius:50%;
+  background:var(--bg); border:2px solid var(--holo-cyan);
+}
+.tl-item time{ font-family:var(--font-mono); font-size:11.5px; color:var(--holo-yellow); }
+.tl-item h4{ font-size:15.5px; margin:4px 0 4px; }
+.tl-item p{ font-size:calc(13.5px * var(--fs)); color:var(--ink-dim); line-height:1.6; max-width:60ch; }
+
+/* --- Games panel --- */
+.game-grid{ display:grid; grid-template-columns:repeat(auto-fill,minmax(190px,1fr)); gap:14px; }
+.game-card{
+  border-radius:var(--radius-md); border:1px solid var(--line); overflow:hidden;
+  background:var(--surface); cursor:pointer; position:relative;
+  transition:transform .4s var(--ease), box-shadow .3s var(--ease), border-color .3s var(--ease);
+  box-shadow:var(--shadow-sm); transform-style:preserve-3d;
+}
+.game-card::after{
+  content:''; position:absolute; inset:0; pointer-events:none; z-index:1;
+  background:radial-gradient(circle at var(--mx,50%) var(--my,50%), rgba(255,255,255,.10), transparent 55%);
+  opacity:0; transition:opacity .3s var(--ease);
+}
+@media(hover:hover){
+  .game-card:hover{ box-shadow:var(--shadow-md); border-color:rgba(255,110,199,.3); }
+  .game-card:hover::after{ opacity:1; }
+}
+.game-card:active{ transform:scale(.98); }
+.game-card__cover{
+  height:132px; display:flex; align-items:center; justify-content:center;
+  font-family:var(--font-display); font-weight:700; font-size:15px; color:rgba(255,255,255,.85);
+  background:var(--bg-soft); overflow:hidden; position:relative;
+}
+.game-card__cover::before{
+  content:''; position:absolute; inset:0;
+  background:linear-gradient(100deg, transparent 30%, rgba(255,255,255,.07) 50%, transparent 70%);
+  background-size:200% 100%; animation:shimmer 1.4s linear infinite;
+}
+.game-card__cover.is-loaded::before{ display:none; }
+.game-card__cover img{
+  width:100%; height:100%; object-fit:cover; display:block;
+  transition:transform .5s var(--ease), opacity .4s var(--ease); opacity:0;
+}
+.game-card__cover img.is-loaded{ opacity:1; }
+@media(hover:hover){ .game-card:hover .game-card__cover img{ transform:scale(1.06); } }
+.game-card__body{ padding:12px 14px; }
+.game-card__body h4{ font-size:14.5px; }
+.game-card__tag{
+  display:inline-block; margin-top:7px; font-family:var(--font-mono); font-size:10.5px;
+  padding:3px 9px; border-radius:999px; border:1px solid var(--line); color:var(--ink-dim);
+}
+.game-card__visit{
+  display:inline-flex; align-items:center; gap:5px; margin-top:8px; margin-left:6px;
+  font-family:var(--font-mono); font-size:10.5px; font-weight:600;
+  padding:3px 9px; border-radius:999px; border:1px solid var(--line);
+  background:var(--surface); color:var(--ink); text-decoration:none;
+  transition:transform .25s var(--ease), border-color .25s var(--ease), box-shadow .25s var(--ease);
+}
+@media(hover:hover){ .game-card__visit:hover{ transform:translateY(-2px); border-color:var(--holo-cyan); box-shadow:var(--shadow-sm); } }
+.game-card__visit:active{ transform:scale(.96); }
+
+/* --- Home panel --- */
+.home-tile-grid{ display:grid; grid-template-columns:repeat(3,1fr); gap:12px; }
+@media(max-width:520px){ .home-tile-grid{ grid-template-columns:repeat(2,1fr); } }
+.home-tile{
+  background:var(--surface); border:1px solid var(--line); border-radius:var(--radius-md);
+  padding:16px 14px; display:flex; flex-direction:column; align-items:flex-start; gap:8px;
+  position:relative; text-align:left; font-family:inherit; color:var(--ink);
+  transition:transform .4s var(--ease), border-color .3s var(--ease), box-shadow .3s var(--ease);
+  box-shadow:var(--shadow-sm); transform-style:preserve-3d; cursor:pointer;
+}
+.home-tile::after{
+  content:''; position:absolute; inset:0; border-radius:inherit; pointer-events:none;
+  background:radial-gradient(circle at var(--mx,50%) var(--my,50%), rgba(255,255,255,.10), transparent 55%);
+  opacity:0; transition:opacity .3s var(--ease);
+}
+@media(hover:hover){
+  .home-tile:hover{ border-color:var(--holo-cyan); box-shadow:var(--shadow-md); }
+  .home-tile:hover::after{ opacity:1; }
+}
+.home-tile:active{ transform:scale(.98); }
+.home-tile__icon{
+  width:34px; height:34px; border-radius:9px; display:flex; align-items:center; justify-content:center;
+  background:var(--bg-soft); color:var(--holo-cyan); flex:none;
+}
+.home-tile__icon svg{ width:18px; height:18px; }
+.home-tile__label{ font-size:14.5px; font-weight:600; }
+.home-tile__count{ font-family:var(--font-mono); font-size:11px; color:var(--ink-faint); }
+
+.home-link{
+  background:transparent; border:0; padding:0; font-family:var(--font-mono);
+  font-size:11px; color:var(--ink-faint); cursor:pointer; transition:color .2s var(--ease);
+}
+@media(hover:hover){ .home-link:hover{ color:var(--holo-cyan); } }
+
+.home-highlight{
+  background:linear-gradient(165deg, var(--surface-2), var(--surface) 55%);
+  border:1px solid var(--line); border-radius:var(--radius-md);
+  padding:20px; box-shadow:var(--shadow-sm);
+  transition:transform .35s var(--ease), box-shadow .35s var(--ease), border-color .35s var(--ease);
+}
+@media(hover:hover){ .home-highlight:hover{ transform:translateY(-3px); box-shadow:var(--shadow-md); border-color:rgba(110,233,255,.25); } }
+.home-highlight__meta{ display:flex; gap:8px; align-items:center; flex-wrap:wrap; }
+.home-highlight__meta time{ color:var(--ink-faint); font-family:var(--font-mono); font-size:11.5px; }
+.home-highlight__teaser{
+  margin-top:12px; font-size:calc(15px * var(--fs)); line-height:1.65; color:var(--ink);
+}
+.home-highlight__foot{ margin-top:16px; display:flex; align-items:center; justify-content:space-between; gap:12px; flex-wrap:wrap; }
+.home-highlight__reactions{ display:flex; gap:14px; font-family:var(--font-mono); font-size:12px; color:var(--ink-faint); }
+.home-highlight__cta{
+  position:relative; border:0; border-radius:999px; padding:10px 20px;
+  font-size:13px; font-weight:700; color:#1a1030; cursor:pointer;
+  background:var(--grad-holo); background-size:220% 220%;
+  box-shadow:0 10px 24px -10px rgba(185,139,255,.55);
+  transition:transform .25s var(--ease-spring), box-shadow .3s var(--ease);
+}
+@media(hover:hover){ .home-highlight__cta:hover{ transform:translateY(-2px); box-shadow:0 14px 30px -10px rgba(185,139,255,.65); } }
+.home-highlight__cta:active{ transform:scale(.96); }
+
+.home-gallery-strip{ display:flex; gap:10px; overflow-x:auto; padding-bottom:4px; scrollbar-width:none; }
+.home-gallery-strip::-webkit-scrollbar{ display:none; }
+.home-gallery-strip__item{
+  flex:none; width:110px; height:110px; border-radius:var(--radius-sm); position:relative; overflow:hidden;
+  cursor:pointer; border:1px solid var(--line); background:var(--bg-soft);
+  transition:transform .3s var(--ease), box-shadow .3s var(--ease);
+}
+.home-gallery-strip__item::before{
+  content:''; position:absolute; inset:0;
+  background:linear-gradient(100deg, transparent 30%, rgba(255,255,255,.07) 50%, transparent 70%);
+  background-size:200% 100%; animation:shimmer 1.4s linear infinite;
+}
+.home-gallery-strip__item.is-loaded::before{ display:none; }
+.home-gallery-strip__item img{
+  width:100%; height:100%; object-fit:cover; display:block; opacity:0;
+  transition:opacity .4s var(--ease), transform .5s var(--ease); transform:scale(1.05);
+}
+.home-gallery-strip__item img.is-loaded{ opacity:1; transform:scale(1); }
+@media(hover:hover){
+  .home-gallery-strip__item:hover{ box-shadow:var(--shadow-md); }
+  .home-gallery-strip__item:hover img{ transform:scale(1.08); }
+}
+.home-gallery-strip__item:active{ transform:scale(.96); }
+@media(max-width:520px){ .home-gallery-strip__item{ width:92px; height:92px; } }
+
+.home-nowplaying{ display:grid; grid-template-columns:1fr 1fr; gap:10px; }
+@media(max-width:420px){ .home-nowplaying{ grid-template-columns:1fr; } }
+.home-chip{
+  background:var(--surface); border:1px solid var(--line); border-radius:var(--radius-sm);
+  padding:10px 13px; display:flex; flex-direction:column; gap:3px;
+}
+.home-chip__tag{ font-family:var(--font-mono); font-size:10.5px; color:var(--holo-yellow); text-transform:uppercase; letter-spacing:.05em; }
+.home-chip__text{ font-size:13px; color:var(--ink-dim); }
+
+/* ==========================================================================
+   MODAL
+   ========================================================================== */
+.modal-backdrop{
+  position:fixed; inset:0; z-index:100; background:var(--scrim-2);
+  backdrop-filter:blur(14px) saturate(140%);
+  -webkit-backdrop-filter:blur(14px) saturate(140%);
+  display:flex; align-items:center; justify-content:center; padding:24px;
+  opacity:0; pointer-events:none; transition:opacity .3s var(--ease);
+}
+.modal-backdrop.is-open{ opacity:1; pointer-events:auto; }
+.modal{
+  width:100%; max-width:480px; max-height:88vh; overflow-y:auto;
+  background:var(--surface); border:1px solid var(--line);
+  border-radius:var(--radius-lg); padding:26px; position:relative;
+  transform:scale(.92) translateY(10px); transition:transform .3s var(--ease-spring), background-color .4s var(--ease);
+  box-shadow:var(--shadow-modal);
+}
+.modal-backdrop.is-open .modal{ transform:scale(1) translateY(0); }
+.modal__close{
+  position:absolute; top:16px; right:16px; width:34px; height:34px; border-radius:50%;
+  border:1px solid var(--line); background:var(--scrim-3); backdrop-filter:blur(10px);
+  color:var(--ink-dim); font-size:16px; line-height:1; z-index:2;
+  transition:color .2s var(--ease), transform .2s var(--ease), border-color .2s var(--ease);
+}
+.modal__handle{ display:none; }
+@media(max-width:560px){
+  .modal__handle{
+    display:block; width:38px; height:4px; border-radius:999px;
+    background:var(--ink-faint); margin:10px auto 2px; touch-action:none; cursor:grab;
+    transition:background .2s var(--ease);
+  }
+  .modal__handle:active{ background:var(--ink-dim); cursor:grabbing; }
+}
+@media(hover:hover){ .modal__close:hover{ color:var(--ink); border-color:var(--holo-cyan); } }
+.modal__close:active{ transform:scale(.9); }
+.modal__media{
+  border-radius:var(--radius-md); margin:-26px -26px 16px; position:relative;
+  display:flex; align-items:center; justify-content:center;
+  font-family:var(--font-display); font-weight:700; color:rgba(255,255,255,.85);
+  background:var(--bg-soft); overflow:hidden;
+  aspect-ratio: var(--media-ratio, 4/3); max-height:50vh;
+}
+.modal__media:empty{ display:none; margin:0; }
+.modal__media img{
+  width:100%; height:100%; object-fit:cover; display:block;
+  opacity:0; transition:opacity .4s var(--ease);
+}
+.modal__media img.is-loaded{ opacity:1; }
+@media(max-width:560px){
+  .modal-backdrop{ align-items:flex-end; padding:0; }
+  .modal{
+    max-width:100%; border-radius:var(--radius-lg) var(--radius-lg) 0 0;
+    max-height:92vh; transform:translateY(100%);
+  }
+  .modal-backdrop.is-open .modal{ transform:translateY(0); }
+  .modal__media{ border-radius:var(--radius-lg) var(--radius-lg) 0 0; }
+}
+.modal h3{ font-size:19px; margin-bottom:6px; }
+.modal p{ font-size:calc(13.5px * var(--fs)); color:var(--ink-dim); line-height:1.65; }
+.modal__meta{ display:flex; gap:16px; margin-top:14px; font-family:var(--font-mono); font-size:11.5px; color:var(--ink-faint); }
+
+footer{
+  position:relative; z-index:2; text-align:center; padding:30px 24px 50px;
+  font-family:var(--font-mono); font-size:11.5px; color:var(--ink-faint);
+}
+
+/* ==========================================================================
+   BOTTOM NAVIGATION — mobile-only replacement for the top tab strip.
+   Desktop nav (.tabs) is untouched; this is a separate, additive component.
+   ========================================================================== */
+.bottom-nav{ display:none; }
+@media(max-width:720px){
+  .tabs{ display:none; }
+  .settings-wrap{ margin-left:auto; } /* .tabs was the flex spacer pushing this right; replace it */
+  .bottom-nav{
+    display:flex; position:fixed; left:0; right:0; bottom:0; z-index:80;
+    padding:6px 6px calc(6px + var(--safe-b));
+    background:var(--scrim-1); backdrop-filter:blur(24px) saturate(160%); -webkit-backdrop-filter:blur(24px) saturate(160%);
+    border-top:1px solid var(--line); box-shadow:var(--shadow-nav);
+  }
+  .panels{ padding-bottom:calc(90px + var(--safe-b)); }
+  body{ padding-bottom:0; }
+}
+.bottom-nav__btn{
+  position:relative; flex:1; min-width:0; border:0; background:transparent;
+  display:flex; flex-direction:column; align-items:center; justify-content:center; gap:3px;
+  padding:8px 2px 7px; color:var(--ink-faint); border-radius:var(--radius-md);
+  min-height:52px; transition:color .25s var(--ease), transform .15s var(--ease);
+}
+.bottom-nav__btn svg{ width:20px; height:20px; transition:transform .3s var(--ease-spring); }
+.bottom-nav__btn span{ font-size:10px; font-weight:600; letter-spacing:.01em; }
+.bottom-nav__btn:active{ transform:scale(.92); }
+.bottom-nav__btn.is-active{ color:var(--ink); }
+.bottom-nav__btn.is-active svg{ transform:translateY(-1px) scale(1.08); }
+.bottom-nav__indicator{
+  position:absolute; top:2px; height:3px; width:22px; border-radius:999px;
+  background:linear-gradient(90deg,var(--holo-cyan),var(--holo-pink));
+  left:0; transition:left .35s var(--ease-spring);
+}
+@media(prefers-reduced-motion:reduce){ .bottom-nav__indicator{ transition:none; } }
+
+/* ==========================================================================
+   FLOATING ACTION BUTTON
+   ========================================================================== */
+.fab{
+  position:fixed; z-index:70;
+  right:calc(20px + var(--safe-r)); bottom:calc(24px + var(--safe-b));
+  width:56px; height:56px; border-radius:50%; border:0;
+  display:flex; align-items:center; justify-content:center;
+  background:linear-gradient(150deg,var(--holo-pink),var(--holo-violet));
+  color:#1a1030; box-shadow:var(--shadow-fab);
+  transform:translateY(0) scale(1); opacity:1;
+  transition:transform .35s var(--ease-spring), opacity .3s var(--ease), box-shadow .3s var(--ease);
+}
+.fab svg{ width:22px; height:22px; }
+.fab.is-hidden{ transform:translateY(140%) scale(.7); opacity:0; pointer-events:none; }
+.fab.is-entering{ animation:fab-in .5s var(--ease-spring) both; }
+@keyframes fab-in{ from{ transform:scale(0) rotate(-30deg); opacity:0; } to{ transform:scale(1) rotate(0); opacity:1; } }
+@media(hover:hover){ .fab:hover{ box-shadow:0 20px 44px -10px rgba(var(--shadow-color),.6); transform:translateY(-2px); } }
+.fab:active{ transform:scale(.9); }
+@media(max-width:720px){ .fab{ bottom:calc(84px + var(--safe-b)); } }
+.fab-toast{
+  position:fixed; z-index:90; left:50%; bottom:calc(24px + var(--safe-b));
+  transform:translate(-50%,10px); background:var(--ink); color:#1a1030;
+  font-size:12.5px; font-weight:600; padding:10px 18px; border-radius:var(--radius-pill);
+  box-shadow:var(--shadow-md); opacity:0; pointer-events:none; transition:opacity .25s var(--ease), transform .25s var(--ease);
+}
+.fab-toast.is-visible{ opacity:1; transform:translate(-50%,0); }
+@media(max-width:720px){ .fab-toast{ bottom:calc(84px + var(--safe-b)); } }
+
+/* ==========================================================================
+   RIPPLE — shared press feedback for buttons across the page
+   ========================================================================== */
+.ripple-host{ position:relative; overflow:hidden; }
+.ripple{
+  position:absolute; border-radius:50%; background:rgba(255,255,255,.35);
+  transform:scale(0); pointer-events:none; animation:ripple-out .55s var(--ease-out) forwards;
+}
+@keyframes ripple-out{ to{ transform:scale(1); opacity:0; } }
+@media(prefers-reduced-motion:reduce){ .ripple{ display:none; } }
+
+/* ==========================================================================
+   FEED — filters, pinned posts, like animation, load more
+   ========================================================================== */
+.filter-row{ display:flex; gap:8px; flex-wrap:wrap; margin-bottom:16px; }
+.filter-chip{
+  border:1px solid var(--line); background:var(--surface); color:var(--ink-dim);
+  font-size:12px; font-weight:600; padding:7px 14px; border-radius:999px;
+  min-height:32px; transition:color .2s var(--ease), background .2s var(--ease), border-color .2s var(--ease), transform .15s var(--ease);
+}
+.filter-chip:active{ transform:scale(.94); }
+.filter-chip.is-active{ color:#1a1030; background:var(--ink); border-color:var(--ink); }
+.post.is-pinned{ border-color:rgba(255,224,102,.4); }
+.pin-badge{
+  display:inline-flex; align-items:center; gap:4px; font-family:var(--font-mono);
+  font-size:10px; color:var(--holo-yellow); border:1px solid rgba(255,224,102,.35);
+  padding:2px 8px; border-radius:999px; margin-bottom:8px;
+}
+.like-btn{
+  border:0; background:transparent; font-family:var(--font-mono); font-size:12px; color:var(--ink-faint);
+  display:inline-flex; align-items:center; gap:5px; padding:4px 6px; border-radius:8px;
+  transition:color .2s var(--ease);
+}
+.like-btn .heart{ display:inline-block; transition:transform .35s var(--ease-spring); }
+.like-btn.is-liked{ color:var(--holo-pink); }
+.like-btn.is-liked .heart{ animation:heart-pop .5s var(--ease-spring); }
+@keyframes heart-pop{ 30%{ transform:scale(1.5); } 55%{ transform:scale(.85); } 100%{ transform:scale(1); } }
+.load-more{
+  display:block; margin:20px auto 6px; padding:11px 26px; border-radius:999px;
+  border:1px solid var(--line); background:var(--surface); color:var(--ink);
+  font-size:13px; font-weight:600; transition:border-color .25s var(--ease), transform .15s var(--ease), background .25s var(--ease);
+}
+@media(hover:hover){ .load-more:hover{ border-color:var(--holo-cyan); } }
+.load-more:active{ transform:scale(.96); }
+.load-more[hidden]{ display:none; }
+.feed-sentinel{ height:1px; }
+
+/* ==========================================================================
+   GALLERY — masonry layout + modal photo navigation
+   ========================================================================== */
+.photo-grid.masonry{
+  display:block; columns:2 220px; column-gap:10px;
+}
+.photo-grid.masonry .photo{
+  aspect-ratio:auto; width:100%; margin:0 0 10px; break-inside:avoid; display:block; min-height:80px;
+}
+@media(min-width:640px){ .photo-grid.masonry{ columns:3 220px; } }
+@media(min-width:980px){ .photo-grid.masonry{ columns:4 220px; } }
+.photo-grid.masonry .photo img{ position:static; height:auto; clip-path:none; transform:none; }
+.photo-grid.masonry .photo img.is-loaded{ transform:none; }
+.modal__nav{
+  position:absolute; top:50%; transform:translateY(-50%); z-index:3;
+  width:38px; height:38px; border-radius:50%; border:1px solid var(--line);
+  background:var(--scrim-3); backdrop-filter:blur(8px); color:var(--ink);
+  display:flex; align-items:center; justify-content:center;
+  opacity:.9; transition:transform .2s var(--ease), opacity .2s var(--ease);
+}
+.modal__nav:active{ transform:translateY(-50%) scale(.9); }
+.modal__nav.prev{ left:10px; } .modal__nav.next{ right:10px; }
+.modal__nav[hidden]{ display:none; }
+.modal__media img{ touch-action:pinch-zoom; }
+
+/* ==========================================================================
+   ACTIVITY GRAPH + ACHIEVEMENTS (About panel)
+   ========================================================================== */
+.activity-graph{ display:grid; grid-template-columns:repeat(26,1fr); gap:4px; }
+.activity-cell{ aspect-ratio:1; border-radius:3px; background:var(--holo-cyan); }
+@media(max-width:520px){ .activity-graph{ grid-template-columns:repeat(16,1fr); } }
+.achv-grid{ display:grid; grid-template-columns:repeat(auto-fill,minmax(180px,1fr)); gap:12px; }
+.achv-card{
+  background:var(--surface); border:1px solid var(--line); border-radius:var(--radius-md);
+  padding:14px; display:flex; gap:12px; align-items:flex-start; box-shadow:var(--shadow-sm);
+  transition:transform .3s var(--ease), border-color .3s var(--ease), box-shadow .3s var(--ease);
+}
+@media(hover:hover){ .achv-card:hover{ transform:translateY(-2px); border-color:rgba(185,139,255,.4); box-shadow:var(--shadow-hover); } }
+.achv-card__icon{
+  width:34px; height:34px; border-radius:10px; flex:none; font-size:16px;
+  display:flex; align-items:center; justify-content:center;
+  background:linear-gradient(150deg,var(--holo-cyan),var(--holo-violet));
+}
+.achv-card h4{ font-size:13.5px; }
+.achv-card p{ font-size:12px; color:var(--ink-dim); margin-top:3px; line-height:1.5; }
+
+/* larger touch targets + spacing polish on touch devices */
+@media(max-width:720px){
+  .tab-btn, .social-btn, .filter-chip{ min-height:40px; display:inline-flex; align-items:center; }
+  button{ -webkit-tap-highlight-color:transparent; }
+}
+
+@media (prefers-reduced-motion: reduce){
+  *{ animation-duration:.001ms !important; animation-iteration-count:1 !important; transition-duration:.001ms !important; }
+}
+</style>
+</head>
+<body>
+
+<a class="skip-link" href="#main">Skip to content</a>
+<div class="ambient"><div class="ambient__accent"></div><div class="ambient__accent2"></div></div>
+<div class="grain"></div>
+<div class="cursor-glow" id="cursorGlow"></div>
+
+<nav class="nav">
+  <div class="nav__brand"><span class="dot"></span>PROFILE.OS</div>
+  <div class="tabs" id="tabs" role="tablist" aria-label="Profile sections"></div>
+  <div class="nav__status" id="statusPill">● online</div>
+  <div class="settings-wrap">
+    <button class="settings-btn" id="settingsBtn" aria-haspopup="true" aria-expanded="false" aria-label="Appearance settings">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"></path></svg>
+    </button>
+    <div class="settings-panel" id="settingsPanel" role="menu" aria-label="Appearance settings">
+      <h5>Theme</h5>
+      <div class="theme-swatches" id="themeSwatches" role="radiogroup" aria-label="Color theme"></div>
+      <h5>Appearance</h5>
+      <div class="mode-seg" id="modeSeg" role="radiogroup" aria-label="Light or dark mode">
+        <button data-mode="dark" role="radio">Dark</button>
+        <button data-mode="light" role="radio">Light</button>
+        <button data-mode="amoled" role="radio">AMOLED</button>
+      </div>
+      <h5>Text size</h5>
+      <div class="text-seg" role="group" aria-label="Text size">
+        <button id="fsDown" aria-label="Decrease text size">A</button>
+        <button id="fsUp" aria-label="Increase text size">A</button>
+      </div>
+    </div>
+  </div>
+</nav>
+
+<section class="hero">
+  <div class="floaters" aria-hidden="true">
+    <span class="floater f1"></span><span class="floater f2"></span>
+    <span class="floater f3"></span><span class="floater f4"></span>
+  </div>
+  <div class="card-stage">
+    <div class="id-card" id="idCard">
+      <div class="id-card__foil"></div>
+      <div class="id-card__sheen" id="idCardSheen"></div>
+      <div class="id-card__inner">
+        <div class="id-card__top">
+          <span class="id-card__label" id="cardLabel">ID CARD</span>
+          <span class="id-card__level" id="cardLevel">LVL —</span>
+        </div>
+        <div class="id-card__avatar-wrap">
+          <div class="id-card__avatar" id="cardAvatar">?</div>
+          <span class="online-dot" id="onlineDot" aria-hidden="true"></span>
+        </div>
+        <div class="id-card__name" id="cardName">Your Name</div>
+        <div class="id-card__meta" id="cardMeta">age · pronouns · location</div>
+        <div class="id-card__xp">
+          <div class="id-card__xp-top"><span>XP</span><span id="xpLabel">0 / 0</span></div>
+          <div class="id-card__xp-track"><div class="id-card__xp-fill" id="xpFill" style="width:0%"></div></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="hero__about">
+    <span class="hero__eyebrow" id="heroEyebrow">— eyebrow —</span>
+    <h1 class="hero__tagline" id="heroTagline">Your tagline goes <span>here</span>.</h1>
+    <p class="hero__bio" id="heroBio">Short bio placeholder. Two or three sentences about who this person is, what they're into, and what they're up to right now.</p>
+
+    <div class="stat-row" id="statRow"></div>
+    <div class="chip-row" id="chipPreview"></div>
+    <div class="social-row" id="socialRow"></div>
+  </div>
+</section>
+
+<div class="panels" id="main">
+
+  <div class="panel" id="panel-home" role="tabpanel" aria-labelledby="tab-home">
+    <div class="home-tile-grid" id="homeTileGrid"></div>
+
+    <div class="section-head"><h2>Jump back in</h2><small>LATEST</small></div>
+    <div class="home-highlight reveal" id="homeHighlight"></div>
+
+    <div class="section-head"><h2>Gallery</h2><small><button type="button" class="home-link" id="homeGalleryLink">View gallery →</button></small></div>
+    <div class="home-gallery-strip" id="homeGalleryStrip"></div>
+
+    <div class="section-head"><h2>Right now</h2><small>LIVE</small></div>
+    <div class="home-nowplaying" id="homeNowPlaying"></div>
+  </div>
+
+  <div class="panel" id="panel-about" role="tabpanel" aria-labelledby="tab-about">
+    <div class="section-head"><h2>Quick facts</h2><small>ABOUT</small></div>
+    <div class="facts-grid" id="factsGrid"></div>
+
+    <div class="section-head"><h2>Interests</h2><small id="interestCount"></small></div>
+    <div class="chip-row" id="interestGrid"></div>
+
+    <div class="section-head"><h2>Currently</h2><small>LIVE TICKER</small></div>
+    <div class="ticker"><div class="ticker__track" id="tickerTrack"></div></div>
+
+    <div class="section-head"><h2>Activity</h2><small>LAST 26 WEEKS</small></div>
+    <div class="activity-graph reveal" id="activityGraph"></div>
+
+    <div class="section-head"><h2>Achievements</h2><small id="achvCount"></small></div>
+    <div class="achv-grid" id="achvGrid"></div>
+  </div>
+
+  <div class="panel" id="panel-feed" role="tabpanel" aria-labelledby="tab-feed">
+    <div class="section-head"><h2>Recent posts</h2><small id="feedCount"></small></div>
+    <div class="filter-row" id="filterRow"></div>
+    <div class="feed-toolbar" id="feedToolbar"></div>
+    <div id="feedList"></div>
+    <button class="load-more" id="loadMoreBtn" hidden>Load more</button>
+    <div class="feed-sentinel" id="feedSentinel"></div>
+  </div>
+
+  <div class="panel" id="panel-channels" role="tabpanel" aria-labelledby="tab-channels">
+    <div class="section-head"><h2>Channels followed / owned</h2><small id="channelCount"></small></div>
+    <div class="channel-grid" id="channelGrid"></div>
+  </div>
+
+  <div class="panel" id="panel-gallery" role="tabpanel" aria-labelledby="tab-gallery">
+    <div class="section-head"><h2>Photos</h2><small id="photoCount"></small></div>
+    <div class="photo-grid masonry" id="photoGrid"></div>
+  </div>
+
+  <div class="panel" id="panel-memories" role="tabpanel" aria-labelledby="tab-memories">
+    <div class="section-head"><h2>Memories</h2><small>TIMELINE</small></div>
+    <div class="timeline" id="timeline"></div>
+  </div>
+
+  <div class="panel" id="panel-games" role="tabpanel" aria-labelledby="tab-games">
+    <div class="section-head"><h2>Games</h2><small id="gameCount"></small></div>
+    <div class="game-grid" id="gameGrid"></div>
+  </div>
+
+</div>
+
+<footer>Template structure — replace the PROFILE object in the script to plug in real data.</footer>
+
+<div class="modal-backdrop" id="modalBackdrop">
+  <div class="modal" id="modalPanel" role="dialog" aria-modal="true" aria-labelledby="modalTitle">
+    <div class="modal__handle" id="modalHandle"></div>
+    <button class="modal__nav prev" id="modalPrev" aria-label="Previous photo" hidden>‹</button>
+    <button class="modal__nav next" id="modalNext" aria-label="Next photo" hidden>›</button>
+    <button class="modal__close ripple-host" id="modalClose" aria-label="Close">&times;</button>
+    <div class="modal__media" id="modalMedia"></div>
+    <h3 id="modalTitle"></h3>
+    <p id="modalBody"></p>
+    <div class="modal__meta" id="modalMeta"></div>
+  </div>
+</div>
+
+<nav class="bottom-nav" id="bottomNav" aria-label="Profile sections"></nav>
+<button class="fab ripple-host" id="fabBtn" aria-label="Share this profile">
+  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="18" cy="5" r="3"></circle><circle cx="6" cy="12" r="3"></circle><circle cx="18" cy="19" r="3"></circle><line x1="8.6" y1="13.5" x2="15.4" y2="17.5"></line><line x1="15.4" y1="6.5" x2="8.6" y2="10.5"></line></svg>
+</button>
+<div class="fab-toast" id="fabToast"></div>
+
+<script>
+/* ==========================================================================
+   PROFILE DATA
+   ------------------------------------------------------------------------
+   Everything on the page is rendered from this object. Replace the
+   placeholder values below with real content — the layout, animations
+   and interactions will keep working as long as the shapes match.
+   Photos, game covers, post media and channel icons all take a plain
+   image URL. Every image is framed to fit its box without cropping
+   (object-fit: contain), so portrait, landscape and square images all
+   work fine side by side. Leave an "image"/"icon" field out (or null)
+   to fall back to a text placeholder instead.
+   ========================================================================== */
+const PROFILE = {
+
+  name: "mr.cheat",
+  age: 20,
+  pronouns: "",
+  avatar: "https://cdn.jsdelivr.net/gh/anatal3/pic@main/logo_styled.gif",
+  location: "IRAN",
+  tagline: "✦ Cheat Engine must be installed before Windows is installed ✦",
+  bio: "idk",
+  eyebrow: "anatal",
+  status: "Beginner",           // online / away / offline — shown in the nav pill
+  presence: "online",           // online / away / offline — colors the avatar dot
+  badges: ["admin"],            // any of: verified, premium, admin — shown next to the name
+  level: 1,
+  xp: 100,
+  xpToNext: 1000,
+  joined: "2026-03-01",
+
+  stats: [
+    { value: "10", label: "Posts" },
+    { value: "6", label: "Followers" },
+    { value: "6",  label: "Following" },
+    { value: "1",   label: "Level" }
+  ],
+
+  facts: [
+    { label: "Birthday",  value: "2006 Jan 6" },
+    { label: "School",    value: "end" },
+    { label: "Pronouns",  value: "" },
+    { label: "Timezone",  value: "GMT +3:30" },
+    { label: "Role",      value: "Admin" },
+    { label: "Joined",    value: "Aug 1" }
+  ],
+
+  // shown in the scrolling "currently" ticker on the About tab
+  nowPlaying: [
+    { tag: "Listening", text: "Placeholder Track — Placeholder Artist" },
+    { tag: "Watching",  text: "Placeholder Show, season 1" },
+    { tag: "Reading",   text: "Placeholder Book" },
+    { tag: "Playing",   text: "Placeholder Game" }
+  ],
+
+  interests: [
+    "🎮 Gaming", "🎨 Drawing", "🎵 Music", "📸 Photography", "🏀 Basketball",
+    "💻 Coding", "🎬 Film", "📚 Reading", "🧗 Climbing", "🍳 Cooking"
+  ],
+
+  social: [
+    { label: "Website",  handle: "@yourname" },
+    { label: "Discord",  handle: "yourname#0001" }
+  ],
+
+  // Posts now support two shapes:
+  //  1) legacy flat shape (author/time/text/image/likes/comments) — kept working
+  //     forever via normalizePost(), so old data never needs to be rewritten.
+  //  2) new block shape (blocks[] + links/integrations/authorCard/reactions) —
+  //     lets one post mix rich text, code, galleries, downloads, product info,
+  //     timelines, alerts, etc. See the block-type reference in BLOCK_RENDERERS.
+  posts: [
+    {
+  author: "mr.cheat",
+  time: "",
+  category: "Windows",
+  readingTime: "1 min read",
+
+  blocks: [
+    {
+      type: "heading",
+      level: 3,
+      text: "NTLite Windows 10 — In Progress 🛠️"
+    },
+
+    {
+      type: "paragraph",
+      html: "NTLite Windows 10 is currently being completed. The customized build is still in progress and will be available for download once it's ready."
+    }
+  ],
+
+  links: [
+    {
+      type: "site",
+      title: "Download — NTLite Windows 10",
+      url: "#"
+    }
+  ]
+},
+    {
+  author: "mr.cheat",
+  time: "",
+  category: "Crypto",
+  readingTime: "1 min read",
+
+  blocks: [
+    {
+      type: "heading",
+      level: 3,
+      text: "TradingView 📈"
+    },
+    {
+      type: "paragraph",
+      html: "<b>TradingView</b> is an interesting website with technical analysis tools and indicators."
+    },
+    {
+      type: "paragraph",
+      html: "We're going to test it for price prediction in the comments of this post and see how it performs."
+    },
+    {
+      type: "quote",
+      text: "It's not just about drawing lines on a chart and calling it technical analysis. You'll see what I mean soon."
+    },
+    {
+      type: "paragraph",
+      html: "17/08/2026 — Apparently, it's not that simple. I'll add another website so we can take a more serious look at what drives the ups and downs of crypto. The details and updates will be posted in the comments."
+    }
+  ],
+
+  links: [
+    {
+      type: "site",
+      title: "TradingView",
+      url: "https://www.tradingview.com/"
+    },
+    {
+      type: "site",
+      title: "CoinGecko",
+      url: "https://www.coingecko.com/"
+    }
+  ]
+},  
+    {
+  author: "mr.cheat",
+  time: "",
+  category: "Telegram",
+  readingTime: "1 min read",
+
+  blocks: [
+    {
+      type: "heading",
+      level: 3,
+      text: "Two Telegram Channels Worth Checking Out 📱"
+    },
+
+    {
+      type: "paragraph",
+      html: "Here are two Telegram channels you might want to check out."
+    }
+  ],
+
+  links: [
+    {
+      type: "telegram",
+      title: "Araeco",
+      url: "https://t.me/araeco"
+    },
+    {
+      type: "telegram",
+      title: "Mahdi Nazemoroaya",
+      url: "https://t.me/mahdinazemoroaya"
+    }
+  ]
+},
+        {
+  author: "mr.cheat",
+  time: "",
+  category: "Tools",
+  readingTime: "1 min read",
+
+  blocks: [
+    {
+      type: "heading",
+      level: 3,
+      text: "Track Planes Around the World ✈️🌍"
+    },
+
+    {
+      type: "paragraph",
+      html: "<b>Flightradar24</b> lets you track aircraft around the world in real time and explore their current flight information."
+    }
+  ],
+
+  links: [
+    {
+      type: "site",
+      title: "Flightradar24",
+      url: "https://www.flightradar24.com"
+    }
+  ]
+},
+        {
+  author: "mr.cheat",
+  time: "",
+  category: "Tools",
+  readingTime: "1 min read",
+
+  blocks: [
+    {
+      type: "heading",
+      level: 3,
+      text: "Track Ships Around the World 🚢🌍"
+    },
+
+    {
+      type: "paragraph",
+      html: "<b>MarineTraffic</b> is one of the most complete platforms for tracking ships and viewing their movements around the world."
+    },
+
+    {
+      type: "list",
+      items: [
+        "Oil and other tankers",
+        "Cargo ships",
+        "Passenger ships",
+        "Recreational vessels",
+        "Country, origin, and destination information"
+      ]
+    },
+
+    {
+      type: "alert",
+      tone: "info",
+      text: "You may need a VPN to access MarineTraffic."
+    },
+
+    {
+      type: "paragraph",
+      html: "Another option is <b>MarineTraffic.live</b>. It seems to offer some interesting features, although its ship database is more limited."
+    }
+  ],
+
+  links: [
+    {
+      type: "site",
+      title: "MarineTraffic",
+      url: "https://www.marinetraffic.com/"
+    },
+    {
+      type: "site",
+      title: "MarineTraffic.live",
+      url: "https://marinetraffic.live/"
+    }
+  ]
+},
+        {
+  author: "mr.cheat",
+  time: "",
+  category: "Emoji",
+  readingTime: "1 min read",
+
+  blocks: [
+    {
+      type: "heading",
+      level: 3,
+      text: "Discover the Latest Unicode Emojis 🪎🐦‍🔥🫏"
+    },
+
+    {
+      type: "paragraph",
+      html: "Want to stay up to date with the <b>latest Unicode emojis</b>? Emojipedia is a great place to explore newly added emojis and see what might be coming to your favorite apps."
+    },
+
+    {
+      type: "paragraph",
+      html: "Some newer emojis include 🪎 🐦‍🔥 🫏 🤼🏻 🫈 🫯 🫪 🪿 🐦‍⬛."
+    },
+
+    {
+      type: "alert",
+      tone: "info",
+      text: "Some emojis may only appear after your device, operating system, or app adds support for them."
+    },
+
+    {
+      type: "quote",
+      text: "These might show up in a future Telegram update: 🫌 🫹 🫫"
+    }
+  ],
+
+  links: [
+    {
+      type: "site",
+      title: "Emojipedia",
+      url: "https://emojipedia.org"
+    }
+  ]
+},
+        {
+  author: "mr.cheat",
+  time: "",
+  category: "Tools",
+  readingTime: "1 min read",
+
+  blocks: [
+    {
+      type: "heading",
+      level: 3,
+      text: "What Is the World Searching for Right Now? 🌍🔎"
+    },
+
+    {
+      type: "paragraph",
+      html: "<b>Google Trends</b> lets you see what people are searching for the most, with trends broken down by country."
+    },
+
+    {
+      type: "paragraph",
+      html: "A useful tool for discovering <b>trending topics, popular searches, and what’s currently getting attention</b> around the world."
+    }
+  ],
+
+  links: [
+    {
+      type: "site",
+      title: "Google Trends — Trending Searches",
+      url: "https://trends.google.com/trending"
+    }
+  ]
+},
+        {
+  author: "mr.cheat",
+  time: "",
+  category: "Games",
+  readingTime: "1 min read",
+
+  blocks: [
+    {
+      type: "heading",
+      level: 3,
+      text: "Play & Watch Chess Online ♟️"
+    },
+
+    {
+      type: "paragraph",
+      html: "If you're into chess, <b>Lichess</b> is a great platform for playing and watching chess online."
+    },
+
+    {
+      type: "list",
+      style: "check",
+      items: [
+        "Watch live chess games and tournaments",
+        "Play chess online against other players",
+        "Practice and improve your chess skills"
+      ]
+    }
+  ],
+
+  links: [
+    {
+      type: "site",
+      title: "Lichess",
+      url: "https://lichess.org/"
+    }
+  ],
+
+  authorCard: {
+    name: "TheCorn333",
+    role: "Source",
+    bio: "Credit: @TheCorn333",
+    telegram: "https://t.me/TheCorn333"
+  }
+},
+        {
+  author: "mr.cheat",
+  time: "",
+  category: "Web",
+  readingTime: "1 min read",
+
+  blocks: [
+    {
+      type: "heading",
+      level: 3,
+      text: "4 Free Platforms for Building a Personal Website 🌐🚀"
+    },
+
+    {
+      type: "paragraph",
+      html: "Looking for a simple way to build your own personal website for free? Here are <b>four platforms</b> worth checking out."
+    },
+
+    {
+      type: "list",
+      style: "number",
+      items: [
+        "<b>Static.app</b> — A simple option for hosting static websites.",
+        "<b>Tiiny.host</b> — Quickly publish and share your website online.",
+        "<b>Cloudflare</b> — Useful for hosting and deploying web projects.",
+        "<b>GitHub</b> — A popular platform for hosting code and web projects."
+      ]
+    },
+
+    {
+      type: "paragraph",
+      html: "Save these four resources and choose the one that fits your project and workflow best."
+    }
+  ],
+
+  links: [
+    {
+      type: "site",
+      title: "Static.app",
+      url: "https://static.app"
+    },
+    {
+      type: "site",
+      title: "Tiiny.host",
+      url: "https://tiiny.host"
+    },
+    {
+      type: "cloudflare",
+      title: "Cloudflare",
+      url: "https://www.cloudflare.com/"
+    },
+    {
+      type: "github",
+      title: "GitHub",
+      url: "https://github.com/"
+    }
+  ]
+},
+        {
+  author: "mr.cheat",
+  time: "",
+  category: "Cloud",
+  readingTime: "1 min read",
+
+  blocks: [
+    {
+      type: "heading",
+      level: 3,
+      text: "Compute Servers for Almost Free! 🚀☁️"
+    },
+
+    {
+      type: "paragraph",
+      html: "Need extra computing power without spending much? <b>Ferdowsi Cloud</b> offers cloud computing resources at surprisingly low prices."
+    },
+
+    {
+      type: "paragraph",
+      html: "A useful resource to keep bookmarked if you're working on <b>AI, development, simulations, or other compute-heavy projects</b>."
+    },
+
+    {
+      type: "alert",
+      tone: "info",
+      text: "Check the available servers, specifications, pricing, and current offers directly on the website."
+    }
+  ],
+
+  links: [
+    {
+      type: "site",
+      title: "Ferdowsi Cloud",
+      url: "https://ferdowsi.cloud/fa"
+    }
+  ]
+},
+        {
+  author: "mr.cheat",
+  time: "",
+  category: "Web & OS",
+  readingTime: "1 min read",
+
+  blocks: [
+    {
+      type: "heading",
+      level: 3,
+      text: "Run Classic Windows Online! 💻🕹️"
+    },
+
+    {
+      type: "paragraph",
+      html: "Ever wanted to go back and actually use an old version of Windows without installing it? These three websites let you explore classic Windows environments <b>directly in your browser</b>."
+    },
+
+    {
+      type: "list",
+      items: [
+        "<b>Win32 Ru XP</b> — https://win32.run/",
+        "<b>Windows 98</b> — https://98.js.org/",
+        "<b>Windows 7 Sim</b> — https://win7simu.visnalize.com/"
+      ]
+    },
+
+    {
+      type: "paragraph",
+      html: "You can interact with the interfaces, explore the desktop, and get a surprisingly nostalgic Windows experience without installing the operating system."
+    },
+
+    {
+      type: "alert",
+      tone: "warning",
+      text: "The Windows 7 simulator is much more graphics-heavy, so a relatively powerful system may be needed for a smooth experience."
+    }
+  ],
+
+  links: [
+    {
+      type: "site",
+      title: "Win32 Ru XP",
+      url: "https://win32.run/"
+    },
+    {
+      type: "site",
+      title: "Windows 98",
+      url: "https://98.js.org/"
+    },
+    {
+      type: "site",
+      title: "Windows 7 Simulator",
+      url: "https://win7simu.visnalize.com/"
+    }
+  ]
+},
+        {
+  author: "mr.cheat",
+  time: "",
+  category: "Design",
+  readingTime: "1 min read",
+
+  blocks: [
+    {
+      type: "heading",
+      level: 3,
+      text: "Make Your Presentations 3D & Gamified! 🚀"
+    },
+
+    {
+      type: "paragraph",
+      html: "Want your PowerPoint presentations to feel more like interactive video games? Save this resource."
+    },
+
+    {
+      type: "paragraph",
+      html: "You can find a collection of free <b>3D characters and assets</b> in the compact <b>GLB</b> format — including animated models that can be used directly in PowerPoint."
+    },
+
+    {
+      type: "list",
+      style: "check",
+      items: [
+        "Talking avatars",
+        "360° animations",
+        "Interactive presentations"
+      ]
+    },
+
+    {
+      type: "alert",
+      tone: "success",
+      text: "Free GLB resources for creating more dynamic and immersive presentations."
+    },
+
+    {
+      type: "button",
+      label: "Explore GLB Models →",
+      url: "https://sketchfab.com/tags/glb"
+    }
+  ],
+
+  links: [
+    {
+      type: "site",
+      title: "Sketchfab — GLB Models",
+      url: "https://sketchfab.com/tags/glb"
+    }
+  ]
+},
+        {
+  author: "mr.cheat",
+  time: "",
+  category: "Web Design",
+  readingTime: "1 min read",
+
+  blocks: [
+    {
+      type: "heading",
+      level: 3,
+      text: "When a Website Feels Like a Video Game 🎮"
+    },
+
+    {
+      type: "paragraph",
+      html: "At first glance, this looks like a futuristic 3D video game. But it’s actually the website of <b>Kode Sports Club</b>, a real luxury sports club in Cairo, Egypt."
+    },
+
+    {
+      type: "paragraph",
+      html: "Instead of building a traditional website, the team turned the entire club into an interactive 3D world. You can explore the club, discover its pools and sports courts, and even unlock <b>Achievements</b> as you move through different areas."
+    },
+
+    {
+      type: "paragraph",
+      html: "It’s a great example of how a website can become more than just a place to display information — it can become an <i>experience</i>."
+    },
+
+    {
+      type: "alert",
+      tone: "info",
+      text: "On mobile, use landscape mode for the full 3D experience."
+    },
+
+    {
+      type: "button",
+      label: "Explore Kode Sports Club →",
+      url: "https://www.kodeclubs.com/"
+    }
+  ],
+
+  links: [
+    {
+      type: "site",
+      title: "Kode Sports Club",
+      url: "https://www.kodeclubs.com/"
+    }
+  ]
+},
+        {
+      author: "mr.cheat", time: "", category: "Games", readingTime: "1 min read",
+      blocks: [
+        { type: "paragraph", html: "It’s called <b>Messenger</b>, but it’s not a chat room. It’s a minimal, incredibly calming little web game 🪐" },
+        { type: "paragraph", html: "You become a postman on a tiny planet, a bit like <i>The Little Prince</i>, delivering packages around the planet. No installation, no fuss. Just open it on your phone or computer and relax for a few minutes." },
+        { type: "link", title: "Play Messenger", url: "https://messenger.abeto.co/" }
+      ],
+      links: [
+        { type: "external", title: "Messenger — Play", url: "https://messenger.abeto.co/" }
+      ],
+      reactions: {},
+      comments: []
+    },
+    {
+      author: "mr.cheat", time: "", category: "Intranet",
+      links: [
+        { type: "external", title: "Music radio", url: "https://radio.9craft.ir/" },
+        { type: "external", title: "Download special music", url: "https://electera.ir/" },
+        { type: "external", title: "Search engine", url: "https://search.bertina.ir/" },
+        { type: "external", title: "Programming and Linux", url: "https://iran.chabokan.net/#services" },
+        { type: "external", title: "Information organization", url: "https://www.alexairan.com/" },
+        { type: "external", title: "Information organization2", url: "https://new.nic.ir/" },
+        { type: "external", title: "Economic chatbot", url: "https://chat.smartbytes.ir/" },
+        { type: "external", title: "File sharing", url: "https://files.ir/" },
+        { type: "external", title: "Extremely economical cloud computing services", url: "https://ferdowsi.cloud/fa" },
+        { type: "external", title: "Other sites", url: "https://www.zoomit.ir/websites/342552-websites-directory-internet-shutdown/" }
+      ],
+      reactions: {},
+      comments: []
+    }
+  ],
+
+  // "icon" is optional — leave it out (or set to "") to fall back to the platform's initial letter
+  channels: [
+    { platform: "YouTube",  handle: "@analogdigital-vw2ds", followers: "0 subs", icon: "https://cdn.jsdelivr.net/gh/anatal3/pic@main/output3.gif", url: "https://youtube.com/@analogdigital-vw2ds?si=L9Cbbt_YAKKAA8tv" },
+    { platform: "Telegram",   handle: "pool",  followers: "9 followers", icon: "https://cdn.jsdelivr.net/gh/anatal3/pic@main/logo_styled.gif", url: "https://t.me/random4site" },
+
+  ],
+
+  // mix of portrait/landscape sources on purpose — the grid frames each one fully, never cropping
+  photos: [
+    { caption: "profile", image: "https://cdn.jsdelivr.net/gh/anatal3/pic@main/logo_styled.gif" },
+    { caption: "fall-ball", image: "https://cdn.jsdelivr.net/gh/anatal3/pic@main/fall ball.png" },
+
+  ],
+
+  memories: [
+    { date: "2026-08-30", title: "start", text: "start the anatal" }
+  ],
+
+  games: [
+    { title: "Fall-Ball", hours: "142 hrs", status: "Playing",   image: "https://cdn.jsdelivr.net/gh/anatal3/pic@main/fall ball.png", url: "https://fall-ball.aanlaitcael.workers.dev/", desc: "A virtual Grade 6 science lab where students explore how **height, speed, and impact energy affect crater size** through interactive experiments with different materials." },
+
+  ],
+
+  // optional — omit either field entirely to fall back to generated placeholders
+  achievements: [
+    { icon: "🏆", title: "Early Adopter", desc: "Joined during the first month." },
+    { icon: "🔥", title: "On a Streak", desc: "Active 7 days in a row." },
+    { icon: "💬", title: "Conversationalist", desc: "Left 100+ comments." }
+  ]
+};
+
+/* ==========================================================================
+   RENDER
+   ========================================================================== */
+const $ = (id) => document.getElementById(id);
+const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+const hoverCapable = window.matchMedia('(hover: hover)').matches;
+
+function renderHero(){
+  $('cardLabel').textContent = PROFILE.name.split(' ')[0].toUpperCase() + " · ID";
+  $('cardLevel').textContent = "LVL " + PROFILE.level;
+  $('cardAvatar').innerHTML =
+    `<img src="${PROFILE.avatar}" alt="${PROFILE.name}">`;
+  $('cardName').innerHTML = `${PROFILE.name}<span class="badge-row" id="cardBadges"></span>`;
+  $('cardMeta').textContent = `${PROFILE.age} · ${PROFILE.pronouns} · ${PROFILE.location}`;
+
+  const BADGE_ICON = { verified:'✓', premium:'★', admin:'⚑' };
+  $('cardBadges').innerHTML = (PROFILE.badges || []).map(b =>
+    `<span class="badge badge--${b}" title="${b[0].toUpperCase()+b.slice(1)}">${BADGE_ICON[b] || '•'}</span>`).join('');
+
+  const presence = PROFILE.presence || 'online';
+  $('onlineDot').className = 'online-dot ' + presence;
+  $('xpLabel').textContent = `${PROFILE.xp} / ${PROFILE.xpToNext}`;
+  $('xpFill').style.width = Math.min(100, (PROFILE.xp / PROFILE.xpToNext) * 100) + '%';
+
+  $('heroEyebrow').textContent = PROFILE.eyebrow;
+  $('heroBio').textContent = PROFILE.bio;
+  $('statusPill').textContent = "● " + PROFILE.status;
+
+  const tag = PROFILE.tagline.split(' ');
+  const last = tag.pop();
+  $('heroTagline').innerHTML = tag.join(' ') + ' <span>' + last + '</span>';
+
+  $('statRow').innerHTML = PROFILE.stats.map(s =>
+    `<div class="stat"><b>${s.value}</b><span>${s.label}</span></div>`).join('');
+
+  $('chipPreview').innerHTML = PROFILE.interests.slice(0,5).map(i =>
+    `<span class="chip">${i}</span>`).join('');
+
+  $('socialRow').innerHTML = PROFILE.social.map(s =>
+    `<a class="social-btn" href="#"><i></i>${s.label} · ${s.handle}</a>`).join('');
+}
+
+function renderAbout(){
+  $('factsGrid').innerHTML = PROFILE.facts.map(f =>
+    `<div class="fact"><span>${f.label}</span><b>${f.value}</b></div>`).join('');
+
+  $('interestCount').textContent = PROFILE.interests.length + ' TOTAL';
+  $('interestGrid').innerHTML = PROFILE.interests.map(i =>
+    `<span class="chip">${i}</span>`).join('');
+
+  const items = PROFILE.nowPlaying.map(n => `<span><span>${n.tag}</span>${n.text}</span>`);
+  $('tickerTrack').innerHTML = items.concat(items).join(''); // duplicated for seamless loop
+
+  renderActivity();
+  renderAchievements();
+}
+
+/* Deterministic pseudo-random activity graph — no real analytics wired up,
+   just a GitHub-style contribution texture seeded from the profile name so
+   it stays stable across renders instead of reshuffling every reload. */
+function renderActivity(){
+  const grid = $('activityGraph');
+  const cells = 26 * 7;
+  let seed = [...PROFILE.name].reduce((a,c) => a + c.charCodeAt(0), 7);
+  const rnd = () => { seed = (seed * 9301 + 49297) % 233280; return seed / 233280; };
+  grid.innerHTML = Array.from({ length: cells }, () => {
+    const v = rnd();
+    const op = v > .8 ? 1 : v > .6 ? .75 : v > .4 ? .45 : v > .22 ? .22 : .08;
+    return `<span class="activity-cell" style="opacity:${op}"></span>`;
+  }).join('');
+}
+
+function renderAchievements(){
+  const list = PROFILE.achievements && PROFILE.achievements.length ? PROFILE.achievements : [
+    { icon: "🏆", title: "Getting Started", desc: "Set up a profile." }
+  ];
+  $('achvCount').textContent = list.length + ' EARNED';
+  $('achvGrid').innerHTML = list.map((a,i) => `
+    <div class="achv-card reveal" style="--d:${Math.min(i,6)*45}ms">
+      <div class="achv-card__icon">${a.icon || '🏅'}</div>
+      <div><h4>${a.title}</h4><p>${a.desc}</p></div>
+    </div>`).join('');
+}
+
+const FEED_PAGE_SIZE = 4;
+let feedFilter = 'All';
+let feedPage = 1;
+let feedSort = 'newest'; // 'newest' | 'pinned' | 'reactions'
+
+function feedCategories(){
+  return ['All', ...new Set(PROFILE.posts.map(p => p.category || 'General'))];
+}
+
+/* ==========================================================================
+   FEED CONTENT-BLOCK SYSTEM
+   A post is now a small document: { meta, blocks[], links, integrations,
+   author, reactions, comments }. normalizePost() upgrades the template's
+   original flat posts ({text, image, likes, comments:Number}) into that
+   shape at render time, so existing PROFILE.posts data keeps working
+   unmodified. Everything renders through BLOCK_RENDERERS — a dispatch
+   table — so adding a new block type never touches renderFeed() itself.
+   ========================================================================== */
+function escapeHtml(s){
+  return String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+}
+
+/* Shared markup for every lazily-loaded Feed image: the <img> plus its
+   hidden fallback (broken icon + message + retry button), wired up by
+   the FEED IMAGE RELIABILITY PIPELINE further down. */
+function feedImgMarkup(src, alt){
+  return `<img class="feed-img" data-src="${src}" alt="${escapeHtml(alt)}" decoding="async">
+    <div class="img-fallback" hidden>
+      <svg viewBox="0 0 24 24" width="28" height="28" aria-hidden="true"><path fill="currentColor" d="M21 19V5a2 2 0 0 0-2-2H5a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2Zm-11-4 2.5-3.01L15.5 16H8Zm9-9.5A1.5 1.5 0 1 1 15.5 7 1.5 1.5 0 0 1 17 5.5Z"/></svg>
+      <p>This image couldn't load.</p>
+      <button type="button" class="img-fallback__retry">Retry</button>
+    </div>`;
+}
+
+function normalizePost(raw){
+  if (raw.__normalized) return raw;
+  const blocks = raw.blocks || [
+    ...(raw.text ? [{ type:'paragraph', html: escapeHtml(raw.text) }] : []),
+    ...(raw.image ? [{ type:'image', src: raw.image }] : [])
+  ];
+  const reactions = raw.reactions || (typeof raw.likes === 'number' ? { '❤️': raw.likes } : {});
+  const comments = Array.isArray(raw.comments) ? raw.comments : [];
+  const commentCount = raw.commentCount ?? (typeof raw.comments === 'number' ? raw.comments : comments.length);
+  return {
+    ...raw,
+    __normalized: true,
+    blocks, reactions, comments, commentCount,
+    kind: raw.kind || 'status'
+  };
+}
+
+function sortedFilteredPosts(){
+  const list = PROFILE.posts
+    .map(normalizePost)
+    .filter(p => feedFilter === 'All' || (p.category || 'General') === feedFilter);
+
+  const totalReactions = p => Object.values(p.reactions || {}).reduce((a,b) => a+b, 0);
+
+  if (feedSort === 'reactions') return list.slice().sort((a,b) => totalReactions(b) - totalReactions(a));
+  // 'newest' and 'pinned' both keep pinned-first as the base ordering —
+  // 'pinned' just makes that explicit as the chosen sort.
+  return list.slice().sort((a,b) => (b.pinned ? 1 : 0) - (a.pinned ? 1 : 0));
+}
+
+function renderFilters(){
+  const cats = feedCategories();
+  if (cats.length <= 2){ $('filterRow').innerHTML = ''; } // not worth showing for 1 category
+  else {
+    $('filterRow').innerHTML = cats.map(c =>
+      `<button class="filter-chip${c === feedFilter ? ' is-active' : ''}" data-cat="${c}" aria-pressed="${c === feedFilter}">${c}</button>`).join('');
+    $('filterRow').querySelectorAll('.filter-chip').forEach(btn => {
+      btn.addEventListener('click', () => {
+        feedFilter = btn.dataset.cat;
+        feedPage = 1;
+        renderFilters();
+        renderFeed();
+      });
+    });
+  }
+
+  $('feedToolbar').innerHTML = `
+    <select class="feed-sort" id="feedSortSelect" aria-label="Sort posts">
+      <option value="newest"${feedSort==='newest'?' selected':''}>Newest</option>
+      <option value="pinned"${feedSort==='pinned'?' selected':''}>Pinned first</option>
+      <option value="reactions"${feedSort==='reactions'?' selected':''}>Most reacted</option>
+    </select>`;
+  $('feedSortSelect').addEventListener('change', e => {
+    feedSort = e.target.value;
+    feedPage = 1;
+    renderFeed();
+  });
+}
+
+/* ---- block renderers ---- */
+const BLOCK_RENDERERS = {
+  heading: b => `<h${b.level||3} class="block-heading lvl-${b.level||3}">${escapeHtml(b.text)}</h${b.level||3}>`,
+  paragraph: b => `<p class="block-text">${b.html}</p>`,
+  list: b => {
+    const tag = b.style === 'number' ? 'ol' : 'ul';
+    const cls = b.style === 'check' ? ' class="block-list block-list--check"' : ' class="block-list"';
+    const items = (b.items||[]).map(it => {
+      if (typeof it === 'string') return `<li>${escapeHtml(it)}</li>`;
+      return `<li${it.done ? ' class="is-done"' : ''}>${escapeHtml(it.text)}</li>`;
+    }).join('');
+    return `<${tag}${cls}>${items}</${tag}>`;
+  },
+  quote: b => `<blockquote class="block-quote">${escapeHtml(b.text)}${b.cite ? `<cite>— ${escapeHtml(b.cite)}</cite>` : ''}</blockquote>`,
+  code: b => `<div class="block-code"><div class="block-code__bar"><span>${escapeHtml(b.lang||'code')}</span><button class="block-code__copy" type="button">Copy</button></div><pre><code>${escapeHtml(b.code)}</code></pre></div>`,
+  table: b => {
+    const head = `<tr>${(b.headers||[]).map(h => `<th>${escapeHtml(h)}</th>`).join('')}</tr>`;
+    const rows = (b.rows||[]).map(r => `<tr>${r.map(c => `<td>${escapeHtml(c)}</td>`).join('')}</tr>`).join('');
+    return `<div class="block-table-wrap"><table class="block-table">${head}${rows}</table></div>`;
+  },
+  alert: b => {
+    const icon = { info:'ℹ️', success:'✅', warning:'⚠️', danger:'⛔', note:'📝' }[b.tone] || 'ℹ️';
+    const role = (b.tone === 'warning' || b.tone === 'danger') ? 'alert' : 'status';
+    return `<div class="block-alert block-alert--${b.tone||'info'}" role="${role}"><span class="block-alert__icon">${icon}</span><span>${escapeHtml(b.text)}</span></div>`;
+  },
+  divider: () => `<hr class="block-divider">`,
+  image: b => `<figure class="post__media img-shell">${feedImgMarkup(b.src, b.alt||'Post image')}${b.caption ? `<figcaption class="post__foot" style="margin-top:6px">${escapeHtml(b.caption)}</figcaption>` : ''}</figure>`,
+  gallery: renderGalleryBlock,
+  video: renderVideoBlock,
+  timeline: renderTimelineBlock,
+  download: renderDownloadBlock,
+  product: renderProductBlock,
+  button: b => `<a class="block-btn" href="${b.url}"${b.url && b.url.startsWith('http') ? ' target="_blank" rel="noopener"' : ''}>${escapeHtml(b.label)}</a>`,
+  statistics: b => `<div class="block-stats">${(b.items||[]).map(s => `<div class="block-stats__item"><b>${escapeHtml(s.value)}</b><span>${escapeHtml(s.label)}</span></div>`).join('')}</div>`,
+  comparison: b => {
+    const head = `<tr>${(b.columns||[]).map(c => `<th${c.highlight?' class="is-highlight"':''}>${escapeHtml(c.label||c)}</th>`).join('')}</tr>`;
+    const rows = (b.rows||[]).map(r => `<tr>${r.map((c,i) => `<td${(b.columns[i]&&b.columns[i].highlight)?' class="is-highlight"':''}>${escapeHtml(c)}</td>`).join('')}</tr>`).join('');
+    return `<div class="block-table-wrap"><table class="block-table">${head}${rows}</table></div>`;
+  },
+  badge: b => `<span class="badge-inline badge-inline--${b.tone||''}">${escapeHtml(b.text)}</span>`,
+};
+
+function renderPostBlocks(post){
+  return post.blocks.map(b => {
+    const fn = BLOCK_RENDERERS[b.type];
+    return fn ? fn(b) : '';
+  }).join('');
+}
+
+function renderGalleryBlock(b){
+  const uid = 'g' + Math.random().toString(36).slice(2,8);
+  window.__galleryBlocks = window.__galleryBlocks || {};
+  window.__galleryBlocks[uid] = b.images || [];
+  return `<div class="block-gallery" data-gallery-uid="${uid}">${(b.images||[]).map((img,i) => `
+    <div class="photo img-shell" data-i="${i}" tabindex="0" role="button" aria-label="Open photo ${i+1}">
+      ${feedImgMarkup(img.image, img.caption || `Gallery photo ${i+1}`)}
+    </div>`).join('')}</div>`;
+}
+
+function renderVideoBlock(b){
+  if (b.provider === 'youtube' || b.provider === 'vimeo'){
+    return `<div class="video-block"><div class="video-facade img-shell" role="button" tabindex="0" data-provider="${b.provider}" data-embed-id="${b.id}" aria-label="Play video">
+      ${b.poster ? feedImgMarkup(b.poster, '') : ''}<span class="video-facade__play">▶</span>
+    </div></div>`;
+  }
+  // mp4 / webm / gif
+  return `<div class="video-block"><video controls preload="none" poster="${b.poster||''}"${b.provider==='gif' ? ' loop muted autoplay playsinline' : ''}><source src="${b.src}"></video></div>`;
+}
+
+function renderTimelineBlock(b){
+  return `<ol class="block-timeline">${(b.steps||[]).map(s => `
+    <li class="block-timeline__step"><b>${escapeHtml(s.version||s.label||'')}</b>${s.date ? `<time>${escapeHtml(s.date)}</time>` : ''}<p>${escapeHtml(s.text||'')}</p></li>`).join('')}</ol>`;
+}
+
+function renderDownloadBlock(b){
+  return `<div class="download-card">${(b.files||[]).map(f => `
+    <div class="download-file">
+      <div class="download-file__icon">${escapeHtml((f.type||'FILE').slice(0,3).toUpperCase())}</div>
+      <div class="download-file__body">
+        <div class="download-file__name">${escapeHtml(f.name)}</div>
+        <div class="download-file__meta">${[f.version && 'v'+f.version, f.size].filter(Boolean).join(' · ')}</div>
+        ${f.changelog ? `<details class="download-file__changelog"><summary>Changelog</summary><ul>${f.changelog.map(c => `<li>${escapeHtml(c)}</li>`).join('')}</ul></details>` : ''}
+      </div>
+      <a class="download-file__btn" href="${f.url||'#'}" download>Download</a>
+    </div>`).join('')}</div>`;
+}
+
+function renderProductBlock(b){
+  return `<div class="product-card">
+    <div class="product-card__head">
+      <h4>${escapeHtml(b.name)}${b.version ? ` <span style="color:var(--ink-faint);font-size:12px;font-family:var(--font-mono)">v${escapeHtml(b.version)}</span>` : ''}</h4>
+      ${b.price ? `<span class="product-card__price">${escapeHtml(b.price)}</span>` : (b.badge ? `<span class="badge-inline badge-inline--${b.badge==='Free'?'free':'paid'}">${escapeHtml(b.badge)}</span>` : '')}
+    </div>
+    ${b.description ? `<p class="product-card__desc">${escapeHtml(b.description)}</p>` : ''}
+    ${b.features ? `<ul class="product-card__features">${b.features.map(f => `<li>${escapeHtml(f)}</li>`).join('')}</ul>` : ''}
+    ${b.screenshots ? `<div class="product-card__shots">${b.screenshots.map((s,i) => `<span class="img-shell">${feedImgMarkup(s, `${b.name || 'Product'} screenshot ${i+1}`)}</span>`).join('')}</div>` : ''}
+    <div class="product-card__actions">
+      ${b.links?.download ? `<a class="product-card__btn product-card__btn--primary" href="${b.links.download}">Download</a>` : ''}
+      ${b.links?.demo ? `<a class="product-card__btn product-card__btn--ghost" href="${b.links.demo}" target="_blank" rel="noopener">Live demo</a>` : ''}
+      ${b.links?.docs ? `<a class="product-card__btn product-card__btn--ghost" href="${b.links.docs}" target="_blank" rel="noopener">Docs</a>` : ''}
+    </div>
+  </div>`;
+}
+
+/* ---- smart link cards (GitHub / Telegram / YouTube / site) ---- */
+const SMART_LINK_ICON = { github:'🐙', telegram:'✈️', youtube:'▶️', cloudflare:'☁️', site:'🔗' };
+function renderSmartLinks(links){
+  if (!links || !links.length) return '';
+  return `<div class="post__links">${links.map(l => `
+    <a class="smart-link-card" href="${l.url}" target="_blank" rel="noopener">
+      <span class="smart-link-card__icon">${SMART_LINK_ICON[l.type] || '🔗'}</span>
+      <span class="smart-link-card__body">
+        <span class="smart-link-card__title">${escapeHtml(l.title)}</span>
+        <span class="smart-link-card__url">${escapeHtml(l.url.replace(/^https?:\/\//,''))}</span>
+      </span>
+    </a>`).join('')}</div>`;
+}
+
+function renderIntegrations(integrations){
+  if (!integrations) return '';
+  const items = [];
+  if (integrations.telegramChannel) items.push({ icon:'✈️', label:'Telegram Channel', url: integrations.telegramChannel });
+  if (integrations.telegramGroup) items.push({ icon:'💬', label:'Telegram Group', url: integrations.telegramGroup });
+  if (integrations.githubRepo) items.push({ icon:'🐙', label:'Repository', url: integrations.githubRepo });
+  if (integrations.githubReleases) items.push({ icon:'🏷️', label:'Releases', url: integrations.githubReleases });
+  if (integrations.githubIssues) items.push({ icon:'🐛', label:'Issues', url: integrations.githubIssues });
+  if (!items.length) return '';
+  return `<div class="post__integrations">${items.map(i => `
+    <a class="integration-btn" href="${i.url}" target="_blank" rel="noopener">${i.icon} ${escapeHtml(i.label)}</a>`).join('')}</div>`;
+}
+
+function renderAuthorCard(author){
+  if (!author) return '';
+  return `<details class="post__author-card">
+    <summary>${escapeHtml(author.name)}${author.role ? ` · ${escapeHtml(author.role)}` : ''}</summary>
+    <div class="post__author-card__body">
+      ${author.avatar ? `<span class="post__author-card__avatar img-shell">${feedImgMarkup(author.avatar, author.name)}</span>` : ''}
+      <div>
+        ${author.bio ? `<div class="post__author-card__bio">${escapeHtml(author.bio)}</div>` : ''}
+        <div class="post__author-card__links">
+          ${author.website ? `<a href="${author.website}" target="_blank" rel="noopener">Website</a>` : ''}
+          ${author.github ? `<a href="${author.github}" target="_blank" rel="noopener">GitHub</a>` : ''}
+          ${author.telegram ? `<a href="${author.telegram}" target="_blank" rel="noopener">Telegram</a>` : ''}
+        </div>
+      </div>
+    </div>
+  </details>`;
+}
+
+const REACTION_SET = ['❤️','🔥','👏','🎉','🤯','👍'];
+function renderReactionBar(post, postIndex){
+  const reactions = post.reactions || {};
+  const btns = REACTION_SET.map(emoji => {
+    const count = reactions[emoji] || 0;
+    if (!count && !REACTION_SET.slice(0,3).includes(emoji)) return ''; // keep the row short; low/no-count extras hide until used
+    return `<button class="reaction-btn" type="button" data-emoji="${emoji}" data-count="${count}" aria-pressed="false" aria-label="React with ${emoji}, ${count} reactions">
+      <span>${emoji}</span><span class="reaction-count">${count || ''}</span></button>`;
+  }).join('');
+  const commentCount = post.commentCount ?? (post.comments || []).length;
+  return `<div class="post__reactions">
+    <div class="reaction-bar" role="group" aria-label="Reactions" data-post="${postIndex}">${btns}</div>
+    <button class="comments-toggle" type="button" data-post="${postIndex}">💬 ${commentCount} comment${commentCount===1?'':'s'}</button>
+  </div>`;
+}
+
+function renderCommentThread(comments){
+  if (!comments || !comments.length){
+    return `<p style="font-size:13px;color:var(--ink-faint)">No comments yet — be the first to say something.</p>`;
+  }
+  const byParent = {};
+  comments.forEach(c => { (byParent[c.parentId || 0] ||= []).push(c); });
+  const renderLevel = (parentId, isReply) => (byParent[parentId] || []).map(c => `
+    <div class="comment${isReply ? ' comment--reply' : ''}">
+      <div class="comment__avatar"></div>
+      <div class="comment__body">
+        <div class="comment__top"><b>${escapeHtml(c.author)}</b><time>${escapeHtml(c.time)}</time></div>
+        <div class="comment__text">${escapeHtml(c.text)}</div>
+        <button class="comment__reply-btn" type="button">Reply</button>
+        ${renderLevel(c.id, true)}
+      </div>
+    </div>`).join('');
+  return `<div class="comment-thread">${renderLevel(0, false)}</div>`;
+}
+
+function renderMetaRow(p){
+  const chips = [];
+  if (p.category) chips.push(`<span class="chip">${escapeHtml(p.category)}</span>`);
+  if (p.version) chips.push(`<span class="chip">v${escapeHtml(p.version)}</span>`);
+  if (p.status) chips.push(`<span class="chip">${escapeHtml(p.status)}</span>`);
+  return `${chips.join('')}${p.readingTime ? `<time>${escapeHtml(p.readingTime)}</time>` : ''}`;
+}
+
+function renderFeed(){
+  const all = sortedFilteredPosts();
+  $('feedCount').textContent = all.length + ' POSTS';
+  const visible = all.slice(0, feedPage * FEED_PAGE_SIZE);
+
+  $('feedList').innerHTML = visible.map((p,i) => `
+    <article class="post reveal${p.pinned ? ' is-pinned' : ''}" style="--d:${Math.min(i,6)*60}ms" data-i="${i}">
+      <div class="post__avatar img-shell">${feedImgMarkup(p.avatar || p.authorCard?.avatar || PROFILE.avatar, p.author)}</div>
+      <div class="post__body">
+        ${p.pinned ? `<span class="pin-badge">📌 Pinned</span><br>` : ''}
+        <div class="post__top"><b>${escapeHtml(p.author)}</b><time>${escapeHtml(p.time)}</time></div>
+        <div class="post__meta-row">${renderMetaRow(p)}</div>
+        <div class="post__blocks">${renderPostBlocks(p)}</div>
+        ${renderSmartLinks(p.links)}
+        ${renderIntegrations(p.integrations)}
+        ${renderAuthorCard(p.authorCard)}
+        ${renderReactionBar(p, i)}
+        <div class="post__comments" id="comments-${i}" hidden></div>
+      </div>
+    </article>`).join('');
+
+  scanFeedImages($('feedList'));
+  observeReveals();
+  bindFeedInteractions(visible);
+
+  const hasMore = visible.length < all.length;
+  const loadMore = $('loadMoreBtn');
+  loadMore.hidden = !hasMore;
+  loadMore.onclick = () => { feedPage++; renderFeed(); };
+
+  initFeedAutoLoad(hasMore);
+}
+
+function bindFeedInteractions(visiblePosts){
+  // reactions
+  document.querySelectorAll('.reaction-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const active = btn.classList.toggle('is-active');
+      const base = parseInt(btn.dataset.count, 10) || 0;
+      const next = base + (active ? 1 : 0);
+      btn.querySelector('.reaction-count').textContent = next || '';
+      btn.setAttribute('aria-pressed', String(active));
+      if (active){ btn.classList.add('just-reacted'); setTimeout(() => btn.classList.remove('just-reacted'), 500); }
+    });
+  });
+
+  // comments — lazy mount on first expand
+  document.querySelectorAll('.comments-toggle').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const idx = btn.dataset.post;
+      const wrap = $('comments-' + idx);
+      const opening = wrap.hidden;
+      wrap.hidden = !opening;
+      if (opening && !wrap.dataset.mounted){
+        const post = visiblePosts[idx];
+        wrap.innerHTML = renderCommentThread(post.comments);
+        wrap.dataset.mounted = '1';
+      }
+    });
+  });
+
+  // gallery blocks — reuse the site-wide lightbox/modal
+  document.querySelectorAll('.block-gallery').forEach(grid => {
+    const uid = grid.dataset.galleryUid;
+    const images = (window.__galleryBlocks || {})[uid] || [];
+    grid.querySelectorAll('.photo').forEach(el => {
+      const open = () => openGalleryPhoto(parseInt(el.dataset.i, 10), images);
+      el.addEventListener('click', open);
+      el.addEventListener('keydown', e => { if (e.key === 'Enter' || e.key === ' '){ e.preventDefault(); open(); } });
+    });
+    // image loading/retry/fallback for these is handled by the Feed
+    // image reliability pipeline (scanFeedImages, wired via MutationObserver)
+  });
+
+  // video facades — swap in the real embed only once clicked (perf)
+  document.querySelectorAll('.video-facade').forEach(btn => {
+    const activate = () => {
+      const { provider, embedId } = btn.dataset;
+      const src = provider === 'youtube'
+        ? `https://www.youtube.com/embed/${embedId}?autoplay=1`
+        : `https://player.vimeo.com/video/${embedId}?autoplay=1`;
+      const iframe = document.createElement('iframe');
+      iframe.src = src;
+      iframe.style.cssText = 'width:100%;height:100%;border:0;display:block;';
+      iframe.allow = 'autoplay; fullscreen; picture-in-picture';
+      iframe.allowFullscreen = true;
+      btn.replaceWith(iframe);
+    };
+    btn.addEventListener('click', activate);
+    btn.addEventListener('keydown', e => { if (e.key === 'Enter' || e.key === ' '){ e.preventDefault(); activate(); } });
+  });
+
+  // code block copy buttons
+  document.querySelectorAll('.block-code__copy').forEach(btn => {
+    btn.addEventListener('click', async () => {
+      const code = btn.closest('.block-code').querySelector('code').textContent;
+      try { await navigator.clipboard.writeText(code); btn.textContent = 'Copied'; setTimeout(() => btn.textContent = 'Copy', 1400); }
+      catch(err) { /* clipboard unavailable — silently ignore */ }
+    });
+  });
+}
+
+/* Infinite-scroll: an IntersectionObserver watches a sentinel below the
+   list and quietly loads the next page; the "Load more" button above stays
+   as a manual fallback for anyone who'd rather not rely on scroll triggers. */
+let feedAutoObserver;
+function initFeedAutoLoad(hasMore){
+  const sentinel = $('feedSentinel');
+  if (feedAutoObserver) feedAutoObserver.disconnect();
+  if (!hasMore) return;
+  feedAutoObserver = new IntersectionObserver(entries => {
+    if (entries[0].isIntersecting){
+      feedAutoObserver.disconnect();
+      feedPage++;
+      renderFeed();
+    }
+  }, { rootMargin: '200px' });
+  feedAutoObserver.observe(sentinel);
+}
+
+/* ==========================================================================
+   FEED IMAGE RELIABILITY PIPELINE
+   Owns every <img class="feed-img"> inside the Feed panel and the gallery
+   lightbox: lazy-starts loads via IntersectionObserver (more reliable than
+   native loading="lazy" for images that start inside display:none panels
+   or closed <details>), sets each media box's aspect ratio from the image's
+   own natural dimensions once loaded, retries transient failures with
+   backoff, and falls back to a placeholder + manual retry when it truly
+   can't load. Replaces the old fitMedia()-only approach, which only ever
+   covered .post__media img and had no retry/fallback path at all.
+   ========================================================================== */
+const RETRY_DELAYS = [600, 1500, 4000];
+const imgState = new WeakMap(); // img -> { attempts, timer }
+
+const feedImgObserver = new IntersectionObserver(entries => {
+  entries.forEach(entry => {
+    if (entry.isIntersecting){
+      startLoad(entry.target);
+      feedImgObserver.unobserve(entry.target);
+    }
+  });
+}, { rootMargin: '400px 0px', threshold: 0.01 });
+
+function wireImage(img){
+  if (img.dataset.imgWired) return;
+  img.dataset.imgWired = '1';
+  imgState.set(img, { attempts: 0, timer: null });
+
+  img.addEventListener('load', () => onImageLoad(img));
+  img.addEventListener('error', () => onImageError(img));
+
+  if (img.dataset.src) feedImgObserver.observe(img);        // lazy path
+  else if (img.src) startLoad(img, /*eager*/ true);          // modal / already-set src
+}
+
+function startLoad(img, eager = false){
+  if (!eager){
+    if (!img.dataset.src || img.src) return;
+    img.src = img.dataset.src;
+  } else if (img.complete && img.naturalWidth){
+    onImageLoad(img); // cache hit — the load event already fired before we attached
+  }
+}
+
+function onImageLoad(img){
+  const box = img.closest('.img-shell') || img.parentElement;
+  const state = imgState.get(img);
+  if (state){ clearTimeout(state.timer); state.attempts = 0; }
+  if (img.naturalWidth && img.naturalHeight){
+    const ratio = Math.min(1.9, Math.max(0.62, img.naturalWidth / img.naturalHeight));
+    box.style.setProperty('--media-ratio', ratio);
+  }
+  box.classList.remove('img-failed');
+  box.classList.add('is-loaded');
+  img.classList.add('is-loaded');
+  const fb = box.querySelector('.img-fallback');
+  if (fb) fb.hidden = true;
+}
+
+function onImageError(img){
+  const box = img.closest('.img-shell') || img.parentElement;
+  const state = imgState.get(img) || { attempts: 0 };
+  state.attempts++;
+  imgState.set(img, state);
+
+  if (state.attempts <= RETRY_DELAYS.length){
+    const delay = RETRY_DELAYS[state.attempts - 1];
+    state.timer = setTimeout(() => forceReload(img), delay);
+  } else {
+    box.classList.add('is-loaded', 'img-failed'); // stop shimmer, reveal fallback
+    const fb = box.querySelector('.img-fallback');
+    if (fb) fb.hidden = false;
+  }
+}
+
+function forceReload(img){
+  const base = img.dataset.src || img.src;
+  if (!base) return;
+  try{
+    const url = new URL(base, location.href);
+    url.searchParams.set('r', Date.now().toString(36));
+    img.src = url.toString();
+  } catch { img.src = base; }
+}
+
+function retryImage(img){
+  const state = imgState.get(img);
+  if (state){ clearTimeout(state.timer); state.attempts = 0; }
+  const box = img.closest('.img-shell') || img.parentElement;
+  box.classList.remove('img-failed');
+  forceReload(img);
+}
+
+// Delegated click — works for every fallback button, present or future.
+document.addEventListener('click', e => {
+  const btn = e.target.closest('.img-fallback__retry');
+  if (!btn) return;
+  const img = btn.closest('.img-shell')?.querySelector('.feed-img');
+  if (img) retryImage(img);
+});
+
+// Reconnect recovery — retry every currently-failed Feed image, staggered
+// so a reconnect doesn't fire a burst of simultaneous requests.
+window.addEventListener('online', () => {
+  document.querySelectorAll('#feedList .img-failed .feed-img, #modalMedia .img-failed .feed-img')
+    .forEach((img, i) => setTimeout(() => retryImage(img), i * 150));
+});
+
+function scanFeedImages(root){
+  if (!root || !root.querySelectorAll) return;
+  root.querySelectorAll('.feed-img:not([data-img-wired])').forEach(wireImage);
+}
+
+// Forces an immediate check for images that never got a layout box while
+// their panel/<details> was hidden — covers cases where the native/IO
+// lazy re-evaluation on becoming visible lags or doesn't fire.
+function wakeFeedImages(root){
+  if (!root) return;
+  root.querySelectorAll('.feed-img').forEach(img => {
+    if (!img.dataset.imgWired) wireImage(img);
+    else if (img.dataset.src && !img.src) startLoad(img);
+  });
+}
+
+// Catches every render path automatically: initial renderFeed(), infinite
+// scroll, filter/sort re-renders, and the gallery lightbox — no render
+// function needs to remember to call anything.
+function initFeedImagePipeline(){
+  const feedListEl = $('feedList'), modalMediaEl = $('modalMedia');
+  const feedMutationObserver = new MutationObserver(muts => {
+    muts.forEach(m => m.addedNodes.forEach(node => {
+      if (node.nodeType !== 1) return;
+      if (node.matches?.('.feed-img')) wireImage(node);
+      else scanFeedImages(node);
+    }));
+  });
+  if (feedListEl) feedMutationObserver.observe(feedListEl, { childList: true, subtree: true });
+  if (modalMediaEl) feedMutationObserver.observe(modalMediaEl, { childList: true, subtree: true });
+
+  // Closed <details> hide their content (author card) the same way
+  // display:none does — wake its images the moment it's opened.
+  document.addEventListener('toggle', e => {
+    if (e.target.matches?.('.post__author-card') && e.target.open) wakeFeedImages(e.target);
+  }, true);
+}
+
+function renderChannels(){
+  $('channelCount').textContent = PROFILE.channels.length + ' CHANNELS';
+  $('channelGrid').innerHTML = PROFILE.channels.map((c,i) => `
+    <div class="channel-card reveal" style="--d:${Math.min(i,6)*45}ms">
+      <div class="channel-card__icon">${c.icon ? `<img src="${c.icon}" alt="${c.platform}" loading="lazy">` : c.platform[0]}</div>
+      <div>
+        <div><b>${c.platform}</b></div>
+        <div class="channel-card__handle">${c.handle}</div>
+      </div>
+      <div class="channel-card__stats">${c.followers}</div>
+      <a href="${c.url}">Visit →</a>
+    </div>`).join('');
+}
+
+function renderGallery() {
+  $('photoCount').textContent = PROFILE.photos.length + ' PHOTOS';
+
+  $('photoGrid').innerHTML = PROFILE.photos.map((p, i) => `
+    <div class="photo reveal" data-caption="${p.caption}" data-i="${i}" tabindex="0" role="button" aria-label="Open photo: ${p.caption}" style="--d:${Math.min(i,8)*40}ms">
+      <img src="${p.image}" alt="${p.caption}" loading="lazy">
+    </div>`
+  ).join('');
+
+  document.querySelectorAll('.photo img').forEach(img => {
+    const mark = () => { img.classList.add('is-loaded'); img.closest('.photo').classList.add('is-loaded'); };
+    if (img.complete && img.naturalWidth) mark();
+    else { img.addEventListener('load', mark); img.addEventListener('error', mark); }
+  });
+
+  document.querySelectorAll('.photo').forEach(el => {
+    const open = () => openGalleryPhoto(parseInt(el.dataset.i, 10));
+    el.addEventListener('click', open);
+    el.addEventListener('keydown', e => { if (e.key === 'Enter' || e.key === ' '){ e.preventDefault(); open(); } });
+  });
+}
+
+// `source` defaults to the main PROFILE.photos gallery, but any array of
+// {image, caption} can be passed in — used by post gallery blocks so they
+// open the exact same modal/lightbox instance instead of a duplicate one.
+let galleryImages = null;
+function openGalleryPhoto(index, source = PROFILE.photos){
+  galleryImages = source;
+  galleryIndex = index;
+  const p = source[index];
+  openModal({
+    image: p.image,
+    title: p.caption || '',
+    body: p.body || "Caption or story behind this photo goes here.",
+    meta: [],
+    isGallery: source.length > 1
+  });
+}
+function stepGalleryPhoto(delta){
+  if (galleryIndex === null || !galleryImages) return;
+  openGalleryPhoto((galleryIndex + delta + galleryImages.length) % galleryImages.length, galleryImages);
+}
+
+function renderMemories(){
+  $('timeline').innerHTML = PROFILE.memories.map((m,i) => `
+    <div class="tl-item reveal" style="--d:${Math.min(i,6)*70}ms">
+      <time>${m.date}</time>
+      <h4>${m.title}</h4>
+      <p>${m.text}</p>
+    </div>`).join('');
+}
+
+function renderGames(){
+  $('gameCount').textContent = PROFILE.games.length + ' GAMES';
+  $('gameGrid').innerHTML = PROFILE.games.map((g,i) => `
+    <div class="game-card reveal" data-i="${i}" style="--d:${Math.min(i,6)*50}ms">
+      <div class="game-card__cover">
+        ${g.image ? `<img src="${g.image}" alt="${g.title}" loading="lazy">` : g.title.split(' ').slice(-1)}
+      </div>
+      <div class="game-card__body">
+        <h4>${g.title}</h4>
+        <span class="game-card__tag">${g.status} · ${g.hours}</span>
+        ${g.url ? `<a class="game-card__visit" href="${escapeHtml(g.url)}" target="_blank" rel="noopener noreferrer">Visit Site ↗</a>` : ''}
+      </div>
+    </div>`).join('');
+
+  document.querySelectorAll('.game-card__cover img').forEach(img => {
+    const mark = () => { img.classList.add('is-loaded'); img.closest('.game-card__cover').classList.add('is-loaded'); };
+    if (img.complete && img.naturalWidth) mark();
+    else { img.addEventListener('load', mark); img.addEventListener('error', mark); }
+  });
+
+  document.querySelectorAll('.game-card__visit').forEach(btn => {
+    btn.addEventListener('click', (e) => { e.stopPropagation(); });
+  });
+
+  document.querySelectorAll('.game-card').forEach(el => {
+    el.addEventListener('click', () => {
+      const g = PROFILE.games[el.dataset.i];
+      openModal({
+        image: g.image, title: g.title, body: g.desc,
+        meta: [g.status, g.hours]
+      });
+    });
+  });
+}
+
+/* ==========================================================================
+   TABS
+   ========================================================================== */
+const TABS = [
+  { id: 'home',     label: 'Home',     icon:'<path d="M4 11.5 12 4l8 7.5"></path><path d="M6 10v9a1 1 0 0 0 1 1h3v-6h4v6h3a1 1 0 0 0 1-1v-9"></path>' },
+  { id: 'about',    label: 'About',    icon:'<circle cx="12" cy="8" r="4"></circle><path d="M4 21c0-4.4 3.6-7 8-7s8 2.6 8 7"></path>' },
+  { id: 'feed',     label: 'Feed',     icon:'<line x1="4" y1="6" x2="20" y2="6"></line><line x1="4" y1="12" x2="20" y2="12"></line><line x1="4" y1="18" x2="14" y2="18"></line>' },
+  { id: 'channels', label: 'Channels', icon:'<rect x="3" y="4" width="7" height="7" rx="1.5"></rect><rect x="14" y="4" width="7" height="7" rx="1.5"></rect><rect x="3" y="15" width="7" height="7" rx="1.5"></rect><rect x="14" y="15" width="7" height="7" rx="1.5"></rect>' },
+  { id: 'gallery',  label: 'Gallery',  icon:'<rect x="3" y="3" width="18" height="18" rx="2"></rect><circle cx="9" cy="9" r="1.8"></circle><path d="M21 15l-5-5-9 9"></path>' },
+  { id: 'memories', label: 'Memories', icon:'<circle cx="12" cy="12" r="9"></circle><path d="M12 7v5l3.5 2"></path>' },
+  { id: 'games',    label: 'Games',    icon:'<rect x="2" y="7" width="20" height="11" rx="5"></rect><line x1="7" y1="11" x2="7" y2="15"></line><line x1="5" y1="13" x2="9" y2="13"></line><circle cx="16" cy="12" r="1"></circle><circle cx="18" cy="14" r="1"></circle>' }
+];
+let currentTabIndex = 0;
+
+/* ==========================================================================
+   HOME — a wayfinding + highlights tab built entirely from data other tabs
+   already own (PROFILE.posts/channels/photos/memories/games/nowPlaying).
+   No new PROFILE fields, no new navigation logic: tiles call the same
+   switchTab() every tab button already uses.
+   ========================================================================== */
+const HOME_TILES = [
+  { id: 'feed',     label: 'Feed',     count: () => PROFILE.posts.length + ' posts' },
+  { id: 'channels', label: 'Channels', count: () => PROFILE.channels.length + ' platforms' },
+  { id: 'gallery',  label: 'Gallery',  count: () => PROFILE.photos.length + ' photos' },
+  { id: 'memories', label: 'Memories', count: () => PROFILE.memories.length + ' saved' },
+  { id: 'games',    label: 'Games',    count: () => PROFILE.games.length + ' games' },
+  { id: 'about',    label: 'About',    count: () => 'Level ' + PROFILE.level }
+];
+
+function renderHome(){
+  // 1) Quick-nav tile grid — icons come straight from TABS so they never drift.
+  $('homeTileGrid').innerHTML = HOME_TILES.map(tile => {
+    const tab = TABS.find(t => t.id === tile.id);
+    return `
+    <button class="home-tile" type="button" data-id="${tile.id}">
+      <span class="home-tile__icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">${tab.icon}</svg></span>
+      <span class="home-tile__label">${tile.label}</span>
+      <span class="home-tile__count">${tile.count()}</span>
+    </button>`;
+  }).join('');
+  $('homeTileGrid').querySelectorAll('.home-tile').forEach(btn => {
+    btn.addEventListener('click', () => switchTab(btn.dataset.id, { userInitiated: true }));
+  });
+
+  // 2) "Jump back in" — the same pinned-first post Feed shows first, collapsed
+  // to a one-line teaser pulled from its first paragraph/heading block.
+  const top = sortedFilteredPosts()[0];
+  if (top) {
+    const teaserBlock = top.blocks.find(b => b.type === 'paragraph' || b.type === 'heading');
+    let teaser = teaserBlock
+      ? (teaserBlock.type === 'paragraph' ? teaserBlock.html.replace(/<[^>]+>/g, '') : teaserBlock.text)
+      : '';
+    if (teaser.length > 140) teaser = teaser.slice(0, 140).trim() + '…';
+    const reactions = Object.entries(top.reactions || {}).map(([emoji, n]) => `<span>${emoji} ${n}</span>`).join('');
+    $('homeHighlight').innerHTML = `
+      <div class="home-highlight__meta">
+        <span class="chip">${top.category || 'General'}</span>
+        <time>${top.time}</time>
+      </div>
+      <p class="home-highlight__teaser">"${escapeHtml(teaser)}"</p>
+      <div class="home-highlight__foot">
+        <div class="home-highlight__reactions">${reactions}</div>
+        <button class="home-highlight__cta" type="button" id="homeReadMoreBtn">Read more →</button>
+      </div>`;
+    $('homeReadMoreBtn').addEventListener('click', () => switchTab('feed', { userInitiated: true }));
+  } else {
+    $('homeHighlight').innerHTML = `<p class="home-highlight__teaser">No posts yet.</p>`;
+  }
+
+  // 3) Gallery highlight strip — real thumbnails, same shimmer-load treatment as the full grid.
+  const strip = PROFILE.photos.slice(0, 8);
+  $('homeGalleryStrip').innerHTML = strip.map((p, i) => `
+    <div class="home-gallery-strip__item reveal" data-i="${i}" style="--d:${i*35}ms">
+      <img src="${p.image}" alt="${p.caption}" loading="lazy">
+    </div>`).join('');
+  $('homeGalleryStrip').querySelectorAll('img').forEach(img => {
+    const mark = () => { img.classList.add('is-loaded'); img.closest('.home-gallery-strip__item').classList.add('is-loaded'); };
+    if (img.complete && img.naturalWidth) mark();
+    else { img.addEventListener('load', mark); img.addEventListener('error', mark); }
+  });
+  $('homeGalleryStrip').querySelectorAll('.home-gallery-strip__item').forEach(el => {
+    el.addEventListener('click', () => openGalleryPhoto(parseInt(el.dataset.i, 10)));
+  });
+  $('homeGalleryLink').addEventListener('click', () => switchTab('gallery', { userInitiated: true }));
+
+  // 4) "Right now" — same PROFILE.nowPlaying array the About ticker reads,
+  // just laid out as glanceable chips instead of a scrolling loop.
+  $('homeNowPlaying').innerHTML = PROFILE.nowPlaying.map(n => `
+    <div class="home-chip">
+      <span class="home-chip__tag">${n.tag}</span>
+      <span class="home-chip__text">${n.text}</span>
+    </div>`).join('');
+}
+
+function renderTabs(){
+  $('tabs').innerHTML = TABS.map((t,i) =>
+    `<button class="tab-btn${i===0?' is-active':''}" id="tab-${t.id}" data-id="${t.id}" role="tab" aria-selected="${i===0}" aria-controls="panel-${t.id}">${t.label}</button>`).join('');
+
+  document.querySelectorAll('.tab-btn').forEach(btn => {
+    btn.addEventListener('click', () => switchTab(btn.dataset.id, { userInitiated: true }));
+  });
+
+  $('bottomNav').innerHTML = `<span class="bottom-nav__indicator" id="bnIndicator"></span>` + TABS.map((t,i) => `
+    <button class="bottom-nav__btn${i===0?' is-active':''}" data-id="${t.id}" role="tab" aria-selected="${i===0}" aria-controls="panel-${t.id}" aria-label="${t.label}">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">${t.icon}</svg>
+      <span>${t.label}</span>
+    </button>`).join('');
+
+  document.querySelectorAll('.bottom-nav__btn').forEach(btn => {
+    btn.addEventListener('click', () => switchTab(btn.dataset.id, { userInitiated: true }));
+  });
+}
+
+function switchTab(id, opts = {}){
+  const { userInitiated = false } = opts;
+  currentTabIndex = Math.max(0, TABS.findIndex(t => t.id === id));
+  document.body.dataset.activeTab = id; // drives the ambient background's per-tab tint (CSS only)
+
+  document.querySelectorAll('.tab-btn').forEach(b => {
+    const active = b.dataset.id === id;
+    b.classList.toggle('is-active', active);
+    b.setAttribute('aria-selected', String(active));
+  });
+  document.querySelectorAll('.bottom-nav__btn').forEach(b => {
+    const active = b.dataset.id === id;
+    b.classList.toggle('is-active', active);
+    b.setAttribute('aria-selected', String(active));
+    if (active) positionBottomNavIndicator(b);
+  });
+  document.querySelectorAll('.panel').forEach(p => p.classList.toggle('is-active', p.id === 'panel-' + id));
+  observeReveals();
+  wakeFeedImages(document.getElementById('panel-' + id));
+
+  // On mobile, the hero/ID card can push new panel content off-screen —
+  // bring the panels container into view so the change is visible right
+  // away. Skipped on the initial page-load call so the page doesn't jump
+  // the moment it opens.
+  if (userInitiated && window.innerWidth <= 720){
+    const main = $('main');
+    if (main) main.scrollIntoView({ behavior: reduceMotion ? 'auto' : 'smooth', block: 'start' });
+  }
+}
+
+function positionBottomNavIndicator(btn){
+  const nav = $('bottomNav'), ind = $('bnIndicator');
+  if (!nav || !ind || !btn) return;
+  const navRect = nav.getBoundingClientRect(), btnRect = btn.getBoundingClientRect();
+  ind.style.marginLeft = '0px';
+  ind.style.left = (btnRect.left - navRect.left + btnRect.width/2 - 11) + 'px';
+}
+window.addEventListener('resize', () => {
+  const active = document.querySelector('.bottom-nav__btn.is-active');
+  if (active) positionBottomNavIndicator(active);
+});
+
+/* ==========================================================================
+   MODAL — also handles gallery prev/next, keyboard nav, and pinch/double-tap
+   zoom on the photo shown inside it.
+   ========================================================================== */
+let galleryIndex = null;
+let modalLastFocus = null;
+
+function openModal({ image, title, body, meta, isGallery = false }){
+  const media = $('modalMedia');
+  media.classList.remove('is-loaded');
+  media.style.removeProperty('--media-ratio');
+  media.innerHTML = image
+    ? `<img class="feed-img" src="${image}" alt="${title}" decoding="async">
+       <div class="img-fallback" hidden>
+         <svg viewBox="0 0 24 24" width="28" height="28" aria-hidden="true"><path fill="currentColor" d="M21 19V5a2 2 0 0 0-2-2H5a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2Zm-11-4 2.5-3.01L15.5 16H8Zm9-9.5A1.5 1.5 0 1 1 15.5 7 1.5 1.5 0 0 1 17 5.5Z"/></svg>
+         <p>This image couldn't load.</p>
+         <button type="button" class="img-fallback__retry">Retry</button>
+       </div>`
+    : '';
+  if (image) wireImage(media.querySelector('img'));
+  $('modalTitle').textContent = title;
+  $('modalBody').textContent = body;
+  $('modalMeta').innerHTML = meta.map(m => `<span>${m}</span>`).join('');
+
+  if (!isGallery) galleryIndex = null;
+  $('modalPrev').hidden = !isGallery;
+  $('modalNext').hidden = !isGallery;
+
+  if (!$('modalBackdrop').classList.contains('is-open')){
+    modalLastFocus = document.activeElement;
+  }
+  $('modalBackdrop').classList.add('is-open');
+  document.body.style.overflow = 'hidden';
+  resetPinchZoom();
+  requestAnimationFrame(() => $('modalClose').focus());
+}
+function closeModal(){
+  $('modalBackdrop').classList.remove('is-open');
+  document.body.style.overflow = '';
+  galleryIndex = null;
+  if (modalLastFocus && modalLastFocus.focus) modalLastFocus.focus();
+}
+$('modalPrev').addEventListener('click', () => stepGalleryPhoto(-1));
+$('modalNext').addEventListener('click', () => stepGalleryPhoto(1));
+
+/* pinch-to-zoom + double-tap zoom on the modal's photo. Bound once to the
+   (persistent) media container — the <img> inside it gets swapped on every
+   openModal call, so the current img is looked up fresh on each gesture
+   rather than captured in a stale closure. */
+let pinchScale = 1;
+function resetPinchZoom(){
+  pinchScale = 1;
+  const img = $('modalMedia').querySelector('img');
+  if (img) img.style.transform = '';
+}
+function initPinchZoom(){
+  const media = $('modalMedia');
+  let lastDist = null, lastTap = 0;
+
+  const setScale = s => {
+    const img = media.querySelector('img');
+    if (!img) return;
+    pinchScale = Math.min(3, Math.max(1, s));
+    img.style.transform = `scale(${pinchScale})`;
+  };
+
+  media.addEventListener('pointerdown', e => {
+    if (e.pointerType !== 'touch') return;
+    media.setPointerCapture(e.pointerId);
+  });
+  media.addEventListener('touchmove', e => {
+    if (e.touches.length === 2){
+      e.preventDefault();
+      const [a,b] = e.touches;
+      const dist = Math.hypot(a.clientX-b.clientX, a.clientY-b.clientY);
+      if (lastDist !== null) setScale(pinchScale * (dist/lastDist));
+      lastDist = dist;
+    }
+  }, { passive:false });
+  media.addEventListener('touchend', e => {
+    if (e.touches.length < 2) lastDist = null;
+    const now = Date.now();
+    if (now - lastTap < 320) setScale(pinchScale > 1 ? 1 : 2);
+    lastTap = now;
+  });
+  media.addEventListener('dblclick', () => setScale(pinchScale > 1 ? 1 : 2));
+}
+
+document.addEventListener('keydown', e => {
+  if (!$('modalBackdrop').classList.contains('is-open')) return;
+  if (galleryIndex === null) return;
+  if (e.key === 'ArrowLeft') stepGalleryPhoto(-1);
+  if (e.key === 'ArrowRight') stepGalleryPhoto(1);
+});
+$('modalClose').addEventListener('click', closeModal);
+$('modalBackdrop').addEventListener('click', e => { if(e.target === $('modalBackdrop')) closeModal(); });
+document.addEventListener('keydown', e => { if(e.key === 'Escape') closeModal(); });
+
+/* ==========================================================================
+   3D TILT — signature interaction on the ID card
+   ========================================================================== */
+function initTilt(){
+  const card = $('idCard');
+  const sheen = $('idCardSheen');
+  const stage = card.closest('.card-stage');
+  if (reduceMotion || !hoverCapable) return;
+
+  const reset = () => { card.style.transform = 'rotateX(0deg) rotateY(0deg)'; };
+
+  stage.addEventListener('pointermove', e => {
+    // Some in-app/WebView browsers misreport (hover:hover) as true on
+    // touch-only screens, so also gate per-event on the real pointer type —
+    // only an actual mouse should drive the tilt.
+    if (e.pointerType && e.pointerType !== 'mouse') return;
+    const r = card.getBoundingClientRect();
+    const px = (e.clientX - r.left) / r.width;
+    const py = (e.clientY - r.top) / r.height;
+    const rx = (py - 0.5) * -14;
+    const ry = (px - 0.5) * 14;
+    card.style.transform = `rotateX(${rx}deg) rotateY(${ry}deg)`;
+    sheen.style.setProperty('--mx', px * 100 + '%');
+    sheen.style.setProperty('--my', py * 100 + '%');
+  });
+  stage.addEventListener('pointerleave', reset);
+  // Touch/pen pointers rarely fire pointerleave — make sure any stray tilt
+  // is always cleared once the pointer lifts or gets cancelled.
+  stage.addEventListener('pointerup', e => { if (e.pointerType !== 'mouse') reset(); });
+  stage.addEventListener('pointercancel', reset);
+}
+
+/* ==========================================================================
+   CURSOR GLOW — a soft light that eases toward the pointer. Desktop only,
+   one instance, low opacity: ambience, not a cursor replacement.
+   ========================================================================== */
+function initCursorGlow(){
+  if (reduceMotion || !hoverCapable) return;
+  const glow = $('cursorGlow');
+  let tx = innerWidth/2, ty = innerHeight/2, cx = tx, cy = ty, raf = null;
+  const step = () => {
+    cx += (tx - cx) * .14; cy += (ty - cy) * .14;
+    glow.style.transform = `translate(${cx}px, ${cy}px) translate(-50%,-50%)`;
+    raf = requestAnimationFrame(step);
+  };
+  window.addEventListener('pointermove', e => {
+    tx = e.clientX; ty = e.clientY;
+    glow.classList.add('is-active');
+    if (!raf) raf = requestAnimationFrame(step);
+  }, { passive:true });
+  document.addEventListener('pointerleave', () => glow.classList.remove('is-active'));
+}
+
+/* ==========================================================================
+   MAGNETIC BUTTONS — nudges the element toward the pointer within its own
+   box, snaps back on leave. Applied only to standalone CTAs, not the tab
+   bar, so a scrollable row of tabs never fights the user's scroll intent.
+   ========================================================================== */
+function initMagnetic(selector, strength = 12){
+  if (reduceMotion || !hoverCapable) return;
+  document.querySelectorAll(selector).forEach(el => {
+    el.addEventListener('pointermove', e => {
+      const r = el.getBoundingClientRect();
+      const mx = e.clientX - (r.left + r.width/2);
+      const my = e.clientY - (r.top + r.height/2);
+      el.style.transform = `translate(${(mx/r.width)*strength}px, ${(my/r.height)*strength}px)`;
+    });
+    el.addEventListener('pointerleave', () => { el.style.transform = ''; });
+  });
+}
+
+/* ==========================================================================
+   CARD TILT + LIGHT — subtle 3D tilt and a light that tracks the pointer
+   across channel/game cards, matching the ID card's signature interaction
+   at a quieter volume.
+   ========================================================================== */
+function initCardTilt(selector, max = 7){
+  if (reduceMotion || !hoverCapable) return;
+  document.querySelectorAll(selector).forEach(el => {
+    el.addEventListener('pointermove', e => {
+      const r = el.getBoundingClientRect();
+      const px = (e.clientX - r.left) / r.width, py = (e.clientY - r.top) / r.height;
+      el.style.setProperty('--mx', px*100 + '%');
+      el.style.setProperty('--my', py*100 + '%');
+      el.style.transform = `perspective(700px) rotateX(${(py-0.5)*-max}deg) rotateY(${(px-0.5)*max}deg) translateY(-3px)`;
+    });
+    el.addEventListener('pointerleave', () => { el.style.transform = ''; });
+  });
+}
+
+/* ==========================================================================
+   SCROLL PARALLAX — a single rAF-throttled scroll listener drives a CSS
+   custom property; the ID card stage reads it for a very small depth shift.
+   ========================================================================== */
+function initScrollParallax(){
+  if (reduceMotion) return;
+  let ticking = false;
+  window.addEventListener('scroll', () => {
+    if (ticking) return;
+    ticking = true;
+    requestAnimationFrame(() => {
+      document.documentElement.style.setProperty('--scrollY', window.scrollY);
+      ticking = false;
+    });
+  }, { passive:true });
+}
+
+/* ==========================================================================
+   MODAL SWIPE-TO-CLOSE — drag the handle down on the mobile bottom sheet
+   to dismiss; short drags snap back.
+   ========================================================================== */
+function initModalSwipe(){
+  const handle = $('modalHandle');
+  const panel = $('modalPanel');
+  let startY = 0, dy = 0, dragging = false;
+
+  handle.addEventListener('pointerdown', e => {
+    dragging = true; startY = e.clientY; dy = 0;
+    panel.style.transition = 'none';
+    handle.setPointerCapture(e.pointerId);
+  });
+  handle.addEventListener('pointermove', e => {
+    if (!dragging) return;
+    dy = Math.max(0, e.clientY - startY);
+    panel.style.transform = `translateY(${dy}px)`;
+  });
+  const release = () => {
+    if (!dragging) return;
+    dragging = false;
+    panel.style.transition = '';
+    panel.style.transform = '';
+    if (dy > 110) closeModal();
+  };
+  handle.addEventListener('pointerup', release);
+  handle.addEventListener('pointercancel', release);
+}
+
+/* ==========================================================================
+   SCROLL REVEAL
+   ========================================================================== */
+let observer;
+function observeReveals(){
+  if(!observer){
+    observer = new IntersectionObserver((entries) => {
+      entries.forEach(en => { if(en.isIntersecting) en.target.classList.add('is-visible'); });
+    }, { threshold: 0.15 });
+  }
+  document.querySelectorAll('.reveal:not(.is-visible)').forEach(el => observer.observe(el));
+}
+
+/* ==========================================================================
+   SWIPE NAVIGATION — horizontal drag on the panel area switches tabs.
+   Guards against accidental swipes: requires the gesture to be clearly more
+   horizontal than vertical and past a minimum distance before it commits,
+   so normal vertical scrolling is never hijacked.
+   ========================================================================== */
+function initSwipeTabs(){
+  const zone = document.querySelector('.panels');
+  let sx = 0, sy = 0, dx = 0, dy = 0, tracking = false, committed = false;
+
+  // Photo strips, screenshot carousels, code blocks, and table wraps all
+  // scroll horizontally in their own right — if a gesture starts inside
+  // one of those, let it scroll normally instead of also being read as a
+  // tab-switch swipe underneath it (that fought the strip's own scroll
+  // and could flip the whole page to a different tab mid-browse).
+  const isInHorizontalScroller = target => {
+    let node = target;
+    while (node && node !== zone){
+      const style = getComputedStyle(node);
+      if ((style.overflowX === 'auto' || style.overflowX === 'scroll') && node.scrollWidth > node.clientWidth + 1){
+        return true;
+      }
+      node = node.parentElement;
+    }
+    return false;
+  };
+
+  zone.addEventListener('touchstart', e => {
+    if (e.touches.length !== 1) return;
+    if (isInHorizontalScroller(e.target)){ tracking = false; return; }
+    sx = e.touches[0].clientX; sy = e.touches[0].clientY;
+    dx = 0; dy = 0; tracking = true; committed = false;
+  }, { passive:true });
+
+  zone.addEventListener('touchmove', e => {
+    if (!tracking) return;
+    dx = e.touches[0].clientX - sx;
+    dy = e.touches[0].clientY - sy;
+    if (!committed && Math.abs(dx) > 12 && Math.abs(dx) > Math.abs(dy) * 1.6) committed = true;
+  }, { passive:true });
+
+  zone.addEventListener('touchend', () => {
+    if (tracking && committed && Math.abs(dx) > 60){
+      const dir = dx < 0 ? 1 : -1; // swipe left → next tab
+      const next = Math.min(TABS.length - 1, Math.max(0, currentTabIndex + dir));
+      if (next !== currentTabIndex) switchTab(TABS[next].id, { userInitiated: true });
+    }
+    tracking = false; committed = false;
+  });
+}
+
+/* ==========================================================================
+   FLOATING ACTION BUTTON — animates in on load, hides while scrolling down,
+   reappears on scroll up. Shares the profile via the Web Share API when
+   available, otherwise copies the link and shows a small confirmation.
+   ========================================================================== */
+function initFAB(){
+  const fab = $('fabBtn');
+  fab.classList.add('is-entering');
+
+  let lastY = window.scrollY, ticking = false;
+  window.addEventListener('scroll', () => {
+    if (ticking) return;
+    ticking = true;
+    requestAnimationFrame(() => {
+      const y = window.scrollY;
+      if (y > lastY + 4 && y > 80) fab.classList.add('is-hidden');
+      else if (y < lastY - 4 || y < 80) fab.classList.remove('is-hidden');
+      lastY = y;
+      ticking = false;
+    });
+  }, { passive:true });
+
+  fab.addEventListener('click', async () => {
+    const shareData = { title: document.title, text: PROFILE.tagline, url: location.href };
+    try{
+      if (navigator.share){ await navigator.share(shareData); return; }
+      await navigator.clipboard.writeText(location.href);
+      showFabToast('Link copied');
+    } catch(err){ /* user cancelled share sheet — nothing to do */ }
+  });
+}
+let toastTimer;
+function showFabToast(msg){
+  const toast = $('fabToast');
+  toast.textContent = msg;
+  toast.classList.add('is-visible');
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => toast.classList.remove('is-visible'), 1800);
+}
+
+/* ==========================================================================
+   RIPPLE — press feedback on tab buttons, the FAB, filter chips, etc.
+   ========================================================================== */
+function initRipple(selector){
+  document.querySelectorAll(selector).forEach(el => {
+    el.classList.add('ripple-host');
+    el.addEventListener('pointerdown', e => {
+      if (reduceMotion) return;
+      const r = el.getBoundingClientRect();
+      const size = Math.max(r.width, r.height) * 1.6;
+      const span = document.createElement('span');
+      span.className = 'ripple';
+      span.style.width = span.style.height = size + 'px';
+      span.style.left = (e.clientX - r.left - size/2) + 'px';
+      span.style.top = (e.clientY - r.top - size/2) + 'px';
+      el.appendChild(span);
+      span.addEventListener('animationend', () => span.remove());
+    });
+  });
+}
+
+/* ==========================================================================
+   SETTINGS — theme (color) + mode (dark/light/AMOLED) + text size. State is
+   kept in memory only (no persistence) so it always starts from the
+   template's default look.
+   ========================================================================== */
+const THEMES = ['purple','cyan','green','orange','red'];
+const MODES = ['dark','light','amoled'];
+let fsStep = 0; // -2..2, each step is +/-10%
+
+function initSettings(){
+  const html = document.documentElement;
+  const btn = $('settingsBtn'), panel = $('settingsPanel');
+
+  $('themeSwatches').innerHTML = THEMES.map(t =>
+    `<button class="theme-swatch${t==='purple' ? ' is-active':''}" data-theme="${t}" role="radio" aria-checked="${t==='purple'}" aria-label="${t} theme"></button>`).join('');
+
+  const openPanel = () => { panel.classList.add('is-open'); btn.classList.add('is-open'); btn.setAttribute('aria-expanded','true'); };
+  const closePanel = () => { panel.classList.remove('is-open'); btn.classList.remove('is-open'); btn.setAttribute('aria-expanded','false'); };
+
+  btn.addEventListener('click', () => panel.classList.contains('is-open') ? closePanel() : openPanel());
+  document.addEventListener('click', e => {
+    if (panel.classList.contains('is-open') && !panel.contains(e.target) && !btn.contains(e.target)) closePanel();
+  });
+  document.addEventListener('keydown', e => { if (e.key === 'Escape') closePanel(); });
+
+  $('themeSwatches').querySelectorAll('.theme-swatch').forEach(sw => {
+    sw.addEventListener('click', () => {
+      html.setAttribute('data-theme', sw.dataset.theme);
+      $('themeSwatches').querySelectorAll('.theme-swatch').forEach(s => {
+        s.classList.toggle('is-active', s === sw);
+        s.setAttribute('aria-checked', String(s === sw));
+      });
+    });
+  });
+
+  $('modeSeg').querySelectorAll('button').forEach(b => {
+    b.classList.toggle('is-active', b.dataset.mode === 'dark');
+    b.setAttribute('aria-checked', String(b.dataset.mode === 'dark'));
+    b.addEventListener('click', () => {
+      html.setAttribute('data-mode', b.dataset.mode);
+      $('modeSeg').querySelectorAll('button').forEach(x => {
+        x.classList.toggle('is-active', x === b);
+        x.setAttribute('aria-checked', String(x === b));
+      });
+    });
+  });
+
+  $('fsUp').addEventListener('click', () => setFontScale(1));
+  $('fsDown').addEventListener('click', () => setFontScale(-1));
+}
+function setFontScale(delta){
+  fsStep = Math.min(2, Math.max(-2, fsStep + delta));
+  document.documentElement.style.setProperty('--fs', (1 + fsStep * 0.1).toFixed(2));
+}
+
+/* ==========================================================================
+   INIT
+   ========================================================================== */
+renderHero();
+renderAbout();
+renderFilters();
+renderFeed();
+renderChannels();
+renderGallery();
+renderMemories();
+renderGames();
+renderHome();
+renderTabs();
+initFeedImagePipeline();
+switchTab(TABS[0].id);
+initTilt();
+initCursorGlow();
+initMagnetic('.social-btn, .modal__close, .home-highlight__cta');
+initCardTilt('.channel-card, .game-card, .home-tile');
+initScrollParallax();
+initModalSwipe();
+initPinchZoom();
+initSwipeTabs();
+initFAB();
+initSettings();
+initRipple('.tab-btn, .bottom-nav__btn, .load-more, .filter-chip, .settings-btn, .theme-swatch, .fab, .modal__close, .home-tile, .home-highlight__cta, .home-link');
+observeReveals();
+
+// Staggered hero/nav entrance — added on the next frame so the browser has
+// already painted the "before" state and the transition actually animates.
+requestAnimationFrame(() => requestAnimationFrame(() => document.body.classList.add('is-ready')));
+</script>
+</body>
+</html>
